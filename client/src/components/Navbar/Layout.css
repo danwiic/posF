@@ -1,0 +1,11 @@
+.layout-container {
+  display: flex;
+  width: 100%;
+  height: fit-content;
+
+}
+
+.main-content {
+  margin-left: 0px; /* Same width as the sidebar */
+
+}

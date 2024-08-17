@@ -1,0 +1,136 @@
+/* CARDS AMD HEADER STYLE */
+.dash--body{
+  background-color: rgb(225, 233, 240);
+}
+
+.dash--header{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+  margin-top: 20px;
+  font-family: "Monseratt", sans-serif;
+}
+
+.cards--container {
+  width: 100%;
+  padding: 20px;
+}
+
+.cards {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Add space between the cards */
+  text-align: center;
+}
+
+.card--total {
+  width: 300px;
+  padding: 8px;
+  height: 150px;
+  border-radius: 12px;
+  box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+}
+
+.sales--header{
+  margin-top: 10px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+span.dash--sales{
+  font-size: 40px;
+  margin-top: 20px;
+  font-weight: bolder;
+}
+
+.today--total{
+  background: rgb(2,0,36);
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(100,151,214,1) 0%, rgba(120,202,213,1) 87%); 
+}
+
+.weekly--total{
+  background: rgb(2,0,36);
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(235,202,132,1) 0%, rgba(213,183,217,1) 87%); 
+}
+
+.monthly--total{
+  background: rgb(2,0,36);
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(176,176,241,1) 0%, rgba(79,200,137,1) 87%);
+}
+
+.overall--total{
+  background: rgb(2,0,36);
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(219,158,216,1) 0%, rgba(126,155,205,1) 87%);
+  
+}
+/* CARDS AND HEADER END STYLE */
+
+
+/* ORDER HISTORY TABLE */
+
+.order--history{
+  padding: 20px;
+}
+
+.order--head{
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.order--table {
+  width: 100%;
+  border-collapse: separate; /* Change from 'collapse' to 'separate' */
+  border-spacing: 0; /* Remove spacing between cells */
+  background: white;
+  border-radius: 8px; /* Apply border-radius to table */
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+  overflow: hidden; /* Ensure rounded corners are visible */
+}
+
+.order--table th, 
+.order--table td {
+  border: 1px solid grey;
+  padding: 4px;
+  border-radius: 0; /* Reset individual border-radius */
+}
+
+.order--table th:first-child {
+  border-top-left-radius: 8px; /* Rounded top-left corner */
+}
+
+.order--table th:last-child {
+  border-top-right-radius: 8px; /* Rounded top-right corner */
+}
+
+.order--table tr:last-child td:first-child {
+  border-bottom-left-radius: 8px; /* Rounded bottom-left corner */
+}
+
+.order--table tr:last-child td:last-child {
+  border-bottom-right-radius: 8px; /* Rounded bottom-right corner */
+}
+
+.dash--popup{
+  padding: 20px;
+  width: 500px;
+  margin: auto;
+  margin-left: 200px;
+  align-items: center;
+}
+
+.view--orders{
+  background: none;
+  border: none;
+  font-weight: 400;
+  cursor: pointer;
+  color: rgb(82, 82, 158);
+  text-decoration: underline;
+}
+
+.bg-dash{
+  box-shadow: 15px 18px 0px 134px rgba(0,0,0,0.75);
+  -webkit-box-shadow: 15px 18px 0px 134px rgba(0,0,0,0.75);
+  -moz-box-shadow: 15px 18px 0px 134px rgba(0,0,0,0.75);
+}

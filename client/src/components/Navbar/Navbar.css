@@ -1,0 +1,87 @@
+.side-container {
+  display: flex;
+  transition: margin-left 0.5s ease;
+  height: 100%;
+}
+
+.sidebar {
+  color: white;
+  height: 100%;
+  width: 100px;
+  background-color: rgb(33, 30, 30);
+  transition: width 0.5s ease;
+  position: relative;
+  box-shadow: 4px 0px 8px rgba(0, 0, 0, 0.5); /* Shadow on the right side */
+}
+
+.sidebar.collapsed {
+  width: 60px;
+}
+
+.sidebar-logo {
+  width: 80px;
+  transition: opacity 0.5s ease;
+  border: 5px solid #853d19;
+  border-radius: 50%;
+
+}
+
+.top-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-bottom: 150px;
+  margin-top: 20px;
+  transition: 0.5s ease;
+}
+
+.bars {
+  display: flex;
+  font-size: 25px;
+  margin-left: 25px;
+  transition: 0.5s ease;
+  cursor: pointer;
+}
+
+.link {
+  display: flex;
+  padding: 10px 15px;
+  gap: 15px;
+  transition: 0.5s ease;
+  text-decoration: none;
+  color: white;
+  font-size: 15px;
+  border-radius: 0;
+  font-weight: 500;
+}
+
+.link:hover,
+.link.active {
+  background-color: white;
+  color: #713314;
+  border-top-left-radius: 30px;
+  border-bottom-left-radius: 30px;
+}
+
+.active {
+  background-color: white;
+  color: #853d19;
+  transition: 0.5 ease;
+}
+
+.icon {
+  font-size: 25px;
+}
+
+/* Position the links to be fixed relative to the sidebar */
+.link-container {
+  position: absolute;
+  bottom: 0; /* Stick to the bottom */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 20px; /* Optional: adjust spacing from the bottom */
+}
+
+
