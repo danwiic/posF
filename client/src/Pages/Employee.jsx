@@ -89,7 +89,7 @@ export default function Employee() {
               <form className="emp--form">
                 <input id="username" name="username" type="text" className="emp--input" required placeholder="Input username..." onChange={handleChange}/>
                 <input id="password" name="password" type="password" className="emp--input" required placeholder="Input password..." onChange={handleChange}/>
-                <button className="btn--emp--add" onClick={handleClick}>ADD EMPLOYEE</button>
+                <button className="btn--emp--add" onClick={handleClick}>ADD</button>
               </form>
               </div>
             </Popup>

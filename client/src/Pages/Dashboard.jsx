@@ -112,6 +112,30 @@ export default function Dashboard() {
           <td>08-15-2024</td>
           <td>₱260</td>
         </tr>
+        <tr>
+          <td>00003</td>
+          <td><button className='view--orders' onClick={() => setOpen(true)}>SEE LIST</button></td>
+          <td>08-15-2024</td>
+          <td>₱260</td>
+        </tr>
+        <tr>
+          <td>00004</td>
+          <td><button className='view--orders' onClick={() => setOpen(true)}>SEE LIST</button></td>
+          <td>08-15-2024</td>
+          <td>₱260</td>
+        </tr>
+        <tr>
+          <td>00005</td>
+          <td><button className='view--orders' onClick={() => setOpen(true)}>SEE LIST</button></td>
+          <td>08-15-2024</td>
+          <td>₱260</td>
+        </tr>
+        <tr>
+          <td>00006</td>
+          <td><button className='view--orders' onClick={() => setOpen(true)}>SEE LIST</button></td>
+          <td>08-15-2024</td>
+          <td>₱260</td>
+        </tr>
       </tbody>
     </table>
   </div>

@@ -9,9 +9,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 15px 18px 0px 134px rgba(0,0,0,0.75);
-  -webkit-box-shadow: 15px 18px 0px 134px rgba(0,0,0,0.75);
-  -moz-box-shadow: 15px 18px 0px 134px rgba(0,0,0,0.75);
 }
 
   
@@ -19,13 +16,11 @@
   position: fixed;
   padding: 32px;
   width: 65%;
-  background-color: white;
+  background-color: #f7f7ff;
   border-radius: 35px;
   height: 500px;
   margin-top: 50px;
-  box-shadow: 15px 18px 8px 200px rgba(0,0,0,0.45);
--webkit-box-shadow: 15px 18px 8px 200px rgba(0,0,0,0.45);
--moz-box-shadow: 15px 18px 8px 200px rgba(0,0,0,0.45);
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
  
 }
 
