@@ -1,6 +1,7 @@
 /* CARDS AMD HEADER STYLE */
 .dash--body{
-  background-color: rgb(225, 233, 240);
+  background: rgb(2,0,36);
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(177,231,210,1) 0%, rgba(155,219,99,1) 100%);
 }
 
 .dash--header{
@@ -96,7 +97,11 @@ span.dash--sales{
   padding: 4px;
   border-radius: 0; /* Reset individual border-radius */
   text-align: center;
-  border-bottom: 1px solid grey;
+  border-bottom: 1px solid black;
+}
+
+.order--table td {
+  font-size: 14px;
 }
 
 .order--table th:first-child {
@@ -115,10 +120,10 @@ span.dash--sales{
   border-bottom-right-radius: 8px; /* Rounded bottom-right corner */
 }
 
+/* POP UP DASHBOARD */
 
 .dash--popup{
   padding: 20px;
-  width: 500px;
   margin: auto;
   margin-left: 200px;
   align-items: center;

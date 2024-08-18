@@ -11,6 +11,9 @@ export default function POS() {
     }))
   );
 
+  const [payment, setPayment] = useState(0);
+  const [change, setChange] = useState(0);
+
   const handleQuantityChange = (drinkIndex, sizeIndex, change) => {
     const newQuantities = [...quantities];
     const newSizeQuantity = newQuantities[drinkIndex].sizes[sizeIndex] + change;
@@ -19,6 +22,23 @@ export default function POS() {
       newQuantities[drinkIndex].sizes[sizeIndex] = newSizeQuantity;
       setQuantities(newQuantities);
     }
+  };
+
+  const handleClearOrder = () => {
+    setQuantities(
+      products.map(drink => ({
+        name: drink.name,
+        sizes: drink.sizes.map(() => 0)
+      }))
+    );
+    setPayment("");
+    setChange(0);
+  };
+
+  const handlePaymentChange = (e) => {
+    const amountPaid = parseFloat(e.target.value) || 0;
+    setPayment(amountPaid);
+    setChange(amountPaid - getTotal());
   };
 
   const getTotal = () => {
@@ -30,6 +50,7 @@ export default function POS() {
   };
 
   return (
+    <div className="pos--container">
     <Layout>
       <div className="pos-list">
         {products.map((drink, drinkIndex) => (
@@ -46,12 +67,12 @@ export default function POS() {
                     <button onClick={() => handleQuantityChange(drinkIndex, sizeIndex, -1)}>-</button>
                     <span>{quantities[drinkIndex].sizes[sizeIndex]}</span>
                     <button onClick={() => handleQuantityChange(drinkIndex, sizeIndex, 1)}>+</button>
+                  </div>
                 </div>
-              </div>
-            ))}
-      </div>
-    </div>
-  ))}
+              ))}
+            </div>
+          </div>
+        ))}
 
         <div className="sticky-summary">
           <h2>Order Summary</h2>
@@ -68,8 +89,20 @@ export default function POS() {
             )}
           </ul>
           <h3>Total: ₱{getTotal().toFixed(2)}</h3>
+          <button onClick={handleClearOrder} className="clear-order-btn">Clear Order</button>
+          <div className="payment-container">
+            <label>Payment:</label>
+            <input
+              type="text"
+              value={payment}
+              onChange={handlePaymentChange}
+              placeholder="Enter payment amount"
+            />
+            <h3>Change: ₱{change.toFixed(2)}</h3>
+          </div>
         </div>
       </div>
     </Layout>
+    </div>
   );
 }

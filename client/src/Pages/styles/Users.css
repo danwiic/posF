@@ -1,19 +1,10 @@
-.emp--container{
+.admin--container{
   padding: 20px;
   width: 95%;
   position: fixed;
 }
 
-.emp-layout{
-  background: rgb(2,0,36);
-  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,215,149,1) 0%, rgba(146,232,244,1) 100%); 
-}
-
-.emp--header{
-  margin-bottom: 10px;
-}
-
-.emp--table {
+.admin--table {
   width: 100%;
   border-collapse: separate; /* Change from 'collapse' to 'separate' */
   border-spacing: 0; /* Remove spacing between cells */
@@ -23,66 +14,53 @@
   overflow-y: scroll; /* Ensure rounded corners are visible */
 }
 
-.emp--table th, 
-.emp--table td {
-  padding: 16px;
-  border-radius: 0; /* Reset individual border-radius */
-}
-
-.emp--table th{
-  font-size: 19px; /* Reset individual border-radius */
-}
-
-.emp--table td {
-  font-size: 15px;
-}
-
-.emp--table th:first-child {
-  border-top-left-radius: 8px; /* Rounded top-left corner */
-}
-
-.emp--table th:last-child {
-  border-top-right-radius: 8px; /* Rounded top-right corner */
-}
-
-.emp--table tr:last-child td:first-child {
-  border-bottom-left-radius: 8px; /* Rounded bottom-left corner */
-}
-
-.emp--table tr:last-child td:last-child {
-  border-bottom-right-radius: 8px; /* Rounded bottom-right corner */
-}
-
-.emp--table th, 
-.emp--table td {
+.admin--table th, 
+.admin--table td {
   padding: 16px;
   border-radius: 0; /* Reset individual border-radius */
   border-right: 1px solid  #ced6d0;
 }
 
-.emp--table th{
-  background-color:#ced6d0;
+.admin--table th{
+  background-color: rgb(255, 255, 255);
   font-size: 16px;
 }
 
-.emp--table td{
+.admin--table td{
   font-size: 13px;
 }
 
-.emp--table tr:nth-child(odd){
+.admin--table th:first-child {
+  border-top-left-radius: 8px; /* Rounded top-left corner */
+}
+
+.admin--table th:last-child {
+  border-top-right-radius: 8px; /* Rounded top-right corner */
+}
+
+.admin--table tr:last-child td:first-child {
+  border-bottom-left-radius: 8px; /* Rounded bottom-left corner */
+}
+
+.admin--table tr:last-child td:last-child {
+  border-bottom-right-radius: 8px; /* Rounded bottom-right corner */
+}
+
+.admin--table tr:nth-child(even){
   background-color: white;
 }
 
-.emp--table tr:nth-child(even){
+.admin--table tr:nth-child(odd){
   background-color: #ced6d0;
 }
 
 .col--operations{
   display: flex;
   justify-content: space-around;
+  align-items: center;
 }
 
-.emp--table .btn-archive{
+.admin--table .btn-archive{
   border: none;
   background-color: #9E9E9E;
   padding: 8px;
@@ -92,7 +70,7 @@
   color: white;
 }
 
-.emp--table .btn-update{
+.admin--table .btn-update{
   border: none;
   background-color: #4CAF50;
   padding: 8px;
@@ -102,7 +80,7 @@
   color: white;
 }
 
-.emp--table .btn-delete{
+.admin--table .btn-delete{
   border: none;
   background-color: #F44336;
   padding: 8px;
@@ -116,50 +94,39 @@
   margin-bottom: 30px;
   margin-top: 30px;
   padding: 12px;
-  background-color: #b04d1c;
+  background-color: rgb(33, 30, 30);
   border: none;
   border-radius: 30px;
   cursor: pointer;
   color: white;
-  font-weight: 600;
+  font-weight: 800;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
 
 /* POPUP DESIGN */
-.emp--popup {
+.admin--popup {
   padding: 10px;
   margin: auto;
   margin-left: 150px;
   align-items: center;
 }
 
-.h3--add--header{
-  color: white;
-}
-
-.emp--popup--container{
-  height: 100%;
-  padding: 20px;
-  background-color: #8a9ebf;
-  border-radius: 35px;
-}
-
-.emp--form {
+.admin--form {
   display: flex;
   flex-direction: column;
   margin-top: 110px;
   align-items: center;
 }
 
-.emp--input {
+.admin--input {
   padding: 10px;
-  width: 30%; /* Adjust width to fit your design */
+  width: 60%; /* Adjust width to fit your design */
   margin-bottom: 20px;
 }
 
-.btn--emp--add {
+.btn--admin--add {
   padding: 10px;
-  width: 30%; /* Full width button */
+  width: 60%; /* Full width button */
   background-color: #b04d1c;
   border-radius: 12px;
   color: white;
@@ -169,6 +136,8 @@
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
-.emp-layout{
+.admin-layout{
   height: 100vh;
+  background: rgb(2,0,36);
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(231,177,205,1) 0%, rgba(221,212,150,1) 100%); 
 }

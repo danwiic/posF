@@ -13,7 +13,6 @@ export default function Dashboard() {
   return(
     <div className='dash--body'>
       <Layout>
-        <h1 className='dash--header'>DASHBOARD</h1>
 
       {/* POP UP COMPONENT ===================================> */}
     <div className="dash--popup">
@@ -61,22 +60,22 @@ export default function Dashboard() {
 
             <div className="card--total today--total">
               <div className='sales--header'>TODAY SALES</div>
-              <span className='dash--sales'>₱2450</span>
+              <span className='dash--sales'>₱2,450</span>
             </div>
 
             <div className="card--total weekly--total">
               <div className='sales--header'>WEEKLY SALES</div>
-              <span className='dash--sales'>₱12360</span>
+              <span className='dash--sales'>₱8,360</span>
             </div>
             
             <div className="card--total monthly--total">
               <div className='sales--header'>MONTHLY SALES</div>
-              <span className='dash--sales '>₱53980</span>
+              <span className='dash--sales '>₱23,980</span>
             </div>
 
             <div className="card--total overall--total">
               <div className='sales--header'>TOTAL SALES</div>
-              <span className='dash--sales'>₱145300</span>
+              <span className='dash--sales'>₱45,300</span>
             </div>
 
           </div>

@@ -6,9 +6,14 @@ import Popup from '../components/Popup/Popup';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from "react-toastify";
-
+import staffs from "../../JSON FILES/emp.json"
 
 export default function Employee() {
+
+  const [staff] = useState(staffs)
+
+  
+
   // USE STATE FOR POPUP
   const [open, setOpen] = useState(false)
 
@@ -70,50 +75,53 @@ export default function Employee() {
 
 
   return(
-    <div>
+    <div className="emp-layout">
       <ToastContainer/>
 
-      <Layout className="emp-layout">
+      <Layout>
         <div className="emp--container">
 
            {/* EMP POPUP */}
            <div className="emp--popup">
             <Popup trigger={open} setTrigger={setOpen}>
-              <h3>Add New Employee</h3>
+              <div className="emp--popup--container">
+              <h3 className="h3--add--header">Add New Employee</h3>
               <form className="emp--form">
                 <input id="username" name="username" type="text" className="emp--input" required placeholder="Input username..." onChange={handleChange}/>
                 <input id="password" name="password" type="password" className="emp--input" required placeholder="Input password..." onChange={handleChange}/>
                 <button className="btn--emp--add" onClick={handleClick}>ADD EMPLOYEE</button>
               </form>
+              </div>
             </Popup>
           </div>
           {/* EMD POPUP */}
 
-          <h1 className="emp--header">EMPLOYEES</h1>
-         
+          {/* ADD NEW EMP / STAFF */}
           <button className="btn--add" onClick={() => setOpen(true)}>ADD EMPLOYEE?</button>
 
-          <table className="emp--table">
+          <table className="emp--table" style={{textAlign: "center"}}>
             <thead>
               <tr>
                 <th>userID</th>
-                <th>username</th>
-                <th>password</th>
-                <th>role</th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Role</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {employee.map(emp => (
-                <tr key={emp.id}>
-                  <td>{emp.id}</td>
+              {staff.map(emp => (
+                <tr key={emp.userID}>
+                  <td>{emp.userID}</td>
                   <td>{emp.username}</td>
                   <td>{emp.password}</td>
                   <td>{emp.role}</td>
                   <td style={{color: emp.status === "active" ? "green" : "red"}}>{emp.status}</td>
                   <td className="col--operations">
-                    <button className="btn-archive" onClick={notifySuccess}>ARCHIVE</button>
+                    <button className="btn-archive" onClick={notifySuccess} 
+                    >{emp.status === "archive" ? "UNARCHIVE" : "ARCHIVE"}
+                    </button>
                     <button className="btn-update">UPDATE</button>
                     <button className="btn-delete" onClick={() => handleDelete(emp.id)}>DELETE</button>
                   </td>

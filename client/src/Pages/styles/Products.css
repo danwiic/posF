@@ -1,12 +1,23 @@
 .stock-container {
-  border-radius: 5px;
+  position: fixed ;
   width: 100%;
   margin-left: 100px;
+
+}
+
+.stock--main--container{
+  width: 100%;
+  background: rgb(2,0,36);
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,198,123,1) 0%, rgba(199,171,223,1) 100%); 
 }
 
 .stock-container > h1 {
   margin-top: 10px;
   margin-bottom: 20px;
+}
+
+.stock-container .prod--table {
+  width: 70%;
 }
 
 .btn-add--prod{
@@ -39,30 +50,13 @@
   background-color: rgb(223, 218, 218);
 }
 
-.stock-table {
+.prod--table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
   background-color: transparent;
-}
-
-.stock-table th, .stock-table td {
-  padding: 12px;
-  text-align: left;
-}
-
-.add-product-btn {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.add-product-btn:hover {
-  background-color: #0056b3;
+  background: rgb(2,0,36);
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,198,123,1) 0%, rgba(199,171,223,1) 100%); 
 }
 
 .prod--table, .prod--th--head, .prod--td--body{
@@ -76,26 +70,36 @@ td, th {
 }
 
 .prod--table--operation{
-  display: flex;
-  gap: 10px;
+  margin: auto;
 }
 
 .btn--prod--update{
   border: none;
   background-color: #4CAF50;
-  padding: 8px;
+  padding: 4px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
   color: white;
+  margin-right: 4px;
+  width: 80px;
+}
+
+.btn--prod--update:hover{
+  background-color:  #3a913d;
 }
 
 .btn--prod--delete{
   border: none;
   background-color: #F44336;
-  padding: 8px;
+  padding: 4px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: bold;
   color: white;
+  width: 80px;
+}
+
+.btn--prod--delete:hover{
+  background-color:  #bc443c;
 }
