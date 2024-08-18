@@ -30,6 +30,8 @@
   height: 150px;
   border-radius: 12px;
   box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+  color: white;
+  font-weight: 800;
 }
 
 .sales--header{
@@ -91,9 +93,10 @@ span.dash--sales{
 
 .order--table th, 
 .order--table td {
-  border: 1px solid grey;
   padding: 4px;
   border-radius: 0; /* Reset individual border-radius */
+  text-align: center;
+  border-bottom: 1px solid grey;
 }
 
 .order--table th:first-child {
@@ -111,6 +114,7 @@ span.dash--sales{
 .order--table tr:last-child td:last-child {
   border-bottom-right-radius: 8px; /* Rounded bottom-right corner */
 }
+
 
 .dash--popup{
   padding: 20px;

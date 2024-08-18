@@ -4,7 +4,7 @@ export default function Users() {
   return(
     <div>
         <Layout >
-          asdkask
+         <p>lorem*50</p>
         </Layout>
     </div>
   )

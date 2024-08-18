@@ -20,15 +20,26 @@ app.use("/server/dashboard", dashboardRoute)
 
 // SELECT ALL EMPLOYEES  OR STAFF
 app.get('/employee', (req, res) => {
-  const q = "SELECT * FROM users WHERE role = 'staff'"
+  const q = "SELECT * FROM users WHERE status = 'active'"
   db.query(q, (err,data)=> {
     if(err) return res.json(err)
     return res.json(data)
   })
 });
 
+// DELETE STAFF
+app.delete('/employee:id', (req, res) => {
+  const empId = req.params.id
+  const q = "DELETE FROM users WHERE id = ?"
+
+  db.query(q, [empId], (err, data) => {
+    if(err) return res.json(err)
+      return res.json("Staff deleted successfully")
+  })
+})
+
 // CREATE DEFAULT EMPLOYEE
-app.post("/register", (req, res) => {
+app.get("/register", (req, res) => {
    // CHECK IF USER EXIST
 
    const q = "SELECT * FROM users WHERE username = ?"
