@@ -27,7 +27,7 @@ export default function Navbar() {
 
   const sideBar = [
     { path: '/dashboard', name: "Dashboard", icon: <AiOutlineDashboard /> },
-    { path: '/products', name: "Products", icon: <MdOutlineProductionQuantityLimits /> },
+    { path: '/products', name: "Inventory", icon: <MdOutlineProductionQuantityLimits /> },
     { path: '/pos', name: "POS", icon: <MdSell /> },
     { path: '/employee', name: "Employees", icon: <CiUser /> },
     { path: '/users', name: "Users", icon: <IoPeopleOutline /> },

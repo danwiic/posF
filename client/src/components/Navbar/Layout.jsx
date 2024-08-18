@@ -4,7 +4,7 @@ import './Layout.css';
 export default function Layout({ children }) {
   return (
     <div className="layout-container">
-        <Navbar className="malupiton"/>
+        <Navbar/>
       <main className="main-content">
         {children}
       </main>

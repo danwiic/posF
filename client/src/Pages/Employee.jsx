@@ -101,7 +101,7 @@ export default function Employee() {
                 <th>password</th>
                 <th>role</th>
                 <th>Status</th>
-                <th>Operation</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
