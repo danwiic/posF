@@ -59,7 +59,7 @@ export default function Dashboard() {
           <div className="cards">
 
             <div className="card--total today--total">
-              <div className='sales--header'>TODAY&apos; SALES</div>
+              <div className='sales--header'>TODAY&apos;S SALES</div>
               <span className='dash--sales'>₱2,450</span>
             </div>
 
