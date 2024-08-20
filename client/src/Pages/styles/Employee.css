@@ -1,40 +1,46 @@
-.emp--container{
+/* Main Layout */
+.emp--container {
   padding: 20px;
-  width: 95%;
-  position: fixed;
+  width: 100%;
+  position: relative;
 }
 
-.emp-layout{
+.emp-layout {
   background: rgb(2,0,36);
-  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,215,149,1) 0%, rgba(146,232,244,1) 100%); 
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,215,149,1) 0%, rgba(146,232,244,1) 100%);
+  height: 100vh; /* Full viewport height */
 }
 
-.emp--header{
+/* Header */
+.emp--header {
   margin-bottom: 10px;
 }
 
+/* Table */
 .emp--table {
   width: 100%;
-  border-collapse: separate; /* Change from 'collapse' to 'separate' */
-  border-spacing: 0; /* Remove spacing between cells */
+  margin-top: 20px; 
+  border-collapse: separate;
+  border-spacing: 0;
   background: white;
-  border-radius: 8px; /* Apply border-radius to table */
+  border-radius: 8px;
   box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
-  overflow-y: scroll; /* Ensure rounded corners are visible */
+  overflow-y: auto; /* Scrollable table */
 }
 
 .emp--table th, 
 .emp--table td {
   padding: 16px;
-  border-radius: 0; /* Reset individual border-radius */
+  border-right: 1px solid #ced6d0;
 }
 
-.emp--table th{
-  font-size: 19px; /* Reset individual border-radius */
+.emp--table th {
+  background-color: white;
+  font-size: 16px;
 }
 
 .emp--table td {
-  font-size: 15px;
+  font-size: 13px;
 }
 
 .emp--table th:first-child {
@@ -53,117 +59,106 @@
   border-bottom-right-radius: 8px; /* Rounded bottom-right corner */
 }
 
-.emp--table th, 
-.emp--table td {
-  padding: 16px;
-  border-radius: 0; /* Reset individual border-radius */
-  border-right: 1px solid  #ced6d0;
-}
-
-.emp--table th{
-  background-color: white;
-  font-size: 16px;
-}
-
-.emp--table td{
-  font-size: 13px;
-}
-
-.emp--table tr:nth-child(even){
+.emp--table tr:nth-child(even) {
   background-color: white;
 }
 
-.emp--table tr:nth-child(odd){
+.emp--table tr:nth-child(odd) {
   background-color: #ced6d0;
 }
 
-.col--operations{
+.col--operations {
   display: flex;
   justify-content: space-around;
+  gap: 25px;
 }
 
-.emp--table .btn-archive{
+.emp--table .btn-archive,
+.emp--table .btn-update,
+.emp--table .btn-delete {
   border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+}
+
+.emp--table .btn-archive {
   background-color: #9E9E9E;
-  padding: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  color: white;
 }
 
-.emp--table .btn-update{
-  border: none;
+.emp--table .btn-update {
   background-color: #4CAF50;
-  padding: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  color: white;
 }
 
-.emp--table .btn-delete{
-  border: none;
+.emp--table .btn-delete {
   background-color: #F44336;
-  padding: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  color: white;
 }
 
-.btn--add{
+.btn--add, .btn--archive {
   margin-bottom: 30px;
   margin-top: 30px;
   padding: 12px;
-  background-color: #b04d1c;
+  background-color: rgb(33, 30, 30);
   border: none;
   border-radius: 30px;
   cursor: pointer;
   color: white;
-  font-weight: 600;
+  font-weight: 800;
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
 
-/* POPUP DESIGN */
+/* Popup Design */
 .emp--popup {
-  padding: 10px;
-  margin: auto;
-  margin-left: 150px;
+  position: fixed; 
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
   align-items: center;
+  background: rgba(0, 0, 0, 0.5); /* Add a semi-transparent background */
 }
 
-.h3--add--header{
+.h3--add--header {
   color: white;
   background-color: #4CAF50;
   padding: 8px;
-  width: 220px;
-  border-radius: 4px 25px 25px 4px;
-  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  border-radius: 4px;
+  text-align: center;
+  margin: 0;
 }
 
-.emp--popup--container{
-  height: 100%;
+.emp--popup--container {
+  background-color: white;
   padding: 20px;
-  border-radius: 20px;
+  border-radius: 10px;
+  width: 100%; /* Increased width */
+  height: auto; /* Allow height to adjust based on content */
+  min-height: 400px; /* Increased minimum height */
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center content vertically */
+  align-items: center; /* Center content horizontally */
 }
 
 .emp--form {
   display: flex;
   flex-direction: column;
-  margin-top: 110px;
-  align-items: center;
+  width: 100%; /* Full width form */
+  gap: 15px;
 }
 
 .emp--input {
   padding: 10px;
-  width: 30%; /* Adjust width to fit your design */
-  margin-bottom: 20px;
+  width: 100%; /* Full width input */
 }
 
 .btn--emp--add {
   padding: 10px;
-  width: 30%; /* Full width button */
   background-color: #b04d1c;
   border-radius: 4px;
   color: white;
@@ -173,6 +168,59 @@
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
-.emp-layout{
-  height: 100vh;
+/* ======================================= ARCHIVE TABLE POPUP */
+.emp--popup--arch--container{
+  height: 500px;
+  width: 100%;
+}
+
+.arch--table {
+  width: 100%;
+  margin-top: 20px; 
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+  overflow-y: auto; /* Scrollable table */
+  text-align: center;
+}
+
+.arch--table .btn-archive,
+.arch--table .btn-delete {
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+}
+
+.arch--table .btn-archive {
+  background-color: #9E9E9E;
+  margin-right: 10px;
+}
+
+.arch--table .btn-delete {
+  background-color: #F44336;
+}
+
+.arch--table th, 
+.arch--table td {
+  padding: 14px;
+  border-right: 1px solid #ced6d0;
+}
+
+.arch--table th {
+  background-color: white;
+  font-size: 14px;
+}
+
+.arch--table td {
+  font-size: 13px;
+}
+
+.popup--view--button{
+  display: flex;
+  justify-content: space-between;
 }

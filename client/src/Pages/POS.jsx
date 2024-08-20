@@ -216,7 +216,6 @@ export default function POS() {
             <button onClick={() => setShowReceipt(false)} className="close-btn">X</button>
             <button onClick={printReceipt} className="print-btn">Print Receipt</button>
             <Receipt
-              cashierName="John Doe" 
               invoiceNumber={`INV-${Date.now()}`} 
               items={receiptItems}
               total={getTotal()}

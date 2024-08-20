@@ -42,13 +42,46 @@ app.get('/token', (req, res) => {
 });
 
 
-// SELECT ALL EMPLOYEES  OR STAFF
+// SELECT ALL STAFF
 app.get('/employee', (req, res) => {
   const q = "SELECT * FROM users WHERE status = 'active' AND role = 'staff'"
   db.query(q, (err,data)=> {
     if(err) return res.json(err)
     return res.json(data)
   })
+});
+
+// SELECT ALL EMPLOYEES  THAT IS UNARCHIVE
+app.get('/archive', (req, res) => {
+  const q = "SELECT * FROM users WHERE status = 'archive'"
+  db.query(q, (err,data)=> {
+    if(err) return res.json(err)
+    return res.json(data)
+  })
+});
+
+// ARCHIVE ACCOUNT
+app.put('/employee/:id/status', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  try {
+    await db.query('UPDATE users SET status = ? WHERE id = ?', [status, id]);
+    res.status(200).send("Status updated");
+  } catch (err) {
+    res.status(500).send(err);
+  }
+});
+
+//  UNARCHIVE
+app.put('/employee/:id/unarch', async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  try {
+    await db.query('UPDATE users SET status = ? WHERE id = ?', [status, id]);
+    res.status(200).send("Status updated");
+  } catch (err) {
+    res.status(500).send(err);
+  }
 });
 
 // DELETE STAFF
