@@ -1,13 +1,15 @@
-import './Popup.css'
+import React from 'react';
+import './Popup.css'; // Add appropriate styling
 
-
-export default function Popup(props) {
-  return (props.trigger) ? (
-    <div className="popop">
+const Popup = ({ trigger, setTrigger, children, className }) => {
+  return (
+    <div className={`popup ${trigger ? 'active' : ''} ${className}`}>
       <div className="popup-inner">
-        <button className="btn-close" onClick={() => props.setTrigger(false)}>X</button>
-        {props.children}
+        <button className="close-btn" onClick={() => setTrigger(false)}>X</button>
+        {children}
       </div>
     </div>
-  ) : ""
+  );
 };
+
+export default Popup;

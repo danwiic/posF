@@ -1,28 +1,34 @@
-import Dashboard from "./Pages/Dashboard";
+import Dashboard from "./Pages/Dashboard.jsx";
 import Login from "./Pages/Login/Login";
-import { Routes, Route } from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Employee from "./Pages/Employee";
 import Users from "./Pages/Users";
-import Logout from "./Pages/Logout";
 import POS from "./Pages/POS";
 import Products from "./Pages/Product";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { UserProvider } from "./Context/UserContext";
+import Forbidden from "./Pages/Forbidden.jsx";
+import Receipt from "./components/Receipt/Receipt.jsx"
+
 
 export default function App() {
 
 
 
   return (
-    <div>
-      <Routes>
-        <Route path="*" element={<div>error 404 Page not found!</div>}/>
-        <Route path="/" element={<Login/>}/>
-        <Route path="/pos" element={<POS/>}/> 
-        <Route path="/dashboard" element={<Dashboard/>}/>
-        <Route path="/products" element={<Products/>}/>
-        <Route path="/employee" element={<Employee/>}/>
-        <Route path="/users" element={<Users/>}/>
-        <Route path="/logout" element={<Logout/>}/>
-      </Routes>
-    </div>
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/rec" element={<Receipt/>} />
+          <Route path="*" element={<Forbidden/>} />
+          <Route path="/" element={<Login />} />
+          <Route path="/pos" element={<ProtectedRoute element={<POS />} allowedRoles={['admin', 'staff']} />} />
+          <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} allowedRoles={['admin']} />} />
+          <Route path="/products" element={<ProtectedRoute element={<Products />} allowedRoles={['admin']} />} />
+          <Route path="/employee" element={<ProtectedRoute element={<Employee />} allowedRoles={['admin']} />} />
+          <Route path="/users" element={<ProtectedRoute element={<Users />} allowedRoles={['admin']} />} />
+        </Routes>
+      </Router>
+  </UserProvider>
   );
 }

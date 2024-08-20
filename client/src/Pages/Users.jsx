@@ -22,8 +22,9 @@ export default function Users() {
             <Popup trigger={open} setTrigger={setOpen}>
               <h3>Add New Admin</h3>
               <form className="admin--form">
-                <input id="username" name="username" type="text" className="admin--input" required placeholder="Input username..." />
-                <input id="password" name="password" type="password" className="admin--input" required placeholder="Input password..."/>
+                <input name="username" type="text" className="admin--input" required placeholder="Input username..." />
+                <input name="password" type="password" className="admin--input" required placeholder="Input password..."/>
+                <input name="role" type="text" className="admin--input" required value={"admin"}/>
                 <button className='btn--admin--add'>ADD ADMIN?</button>
               </form>
             </Popup>

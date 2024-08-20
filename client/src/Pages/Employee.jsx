@@ -1,35 +1,24 @@
-import { useEffect, useState } from "react"
-import Layout from "../components/Navbar/Layout"
-import axios from 'axios'
-import "./styles/Employee.css"
+import { useEffect, useState } from "react";
+import Layout from "../components/Navbar/Layout";
+import axios from 'axios';
+import "./styles/Employee.css";
 import Popup from '../components/Popup/Popup';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from "react-toastify";
-import staffs from "../../JSON FILES/emp.json"
 
 export default function Employee() {
-
-  const [staff] = useState(staffs)
-
-  
-
-  // USE STATE FOR POPUP
-  const [open, setOpen] = useState(false)
-
-  const [employee, setEmployee] = useState([])
-  console.log(employee)
-
+  const [open, setOpen] = useState(false);
+  const [employee, setEmployee] = useState([]);
   const [emp, setEmp] = useState({
     username: "",
     password: ""
-  })
+  });
 
   useEffect(() => {
     const fetchStaff = async () => {
       try {
         const res = await axios.get("http://localhost:8800/employee");
-        console.log("Response:", res);
         setEmployee(res.data); 
       } catch (err) {
         console.log("Error:", err);
@@ -38,68 +27,79 @@ export default function Employee() {
     fetchStaff();
   }, [emp]);
 
-  // ADDING NEW EMP
-  
   const handleChange = (e) => {
-    e.preventDefault()
-    setEmp(prev => ({...prev, [e.target.name]: e.target.value}))
-  }
+    e.preventDefault();
+    setEmp(prev => ({...prev, [e.target.name]: e.target.value}));
+  };
 
-  
-  const handleClick = async e => {
-    e.preventDefault()
-    try{
-      await axios.post("http://localhost:8800/server/auth/register", emp)
-      notifySuccess()
+  const notifySuccess = () => toast.success("Account added successfully");
+
+  const handleClick = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post("http://localhost:8800/register", emp);
+      notifySuccess();
       setEmp({
         username: '',
         password: ''
       });
-    }catch(err){
+      setOpen(false); // Close popup after successful addition
+    } catch (err) {
       console.log(err);
+      toast.error('Failed to add employee');
     }
-  }
-
-
-  const notifySuccess = () => toast.success("Account added successfully")
-  // DELETING STAFF
+  };
 
   const handleDelete = async (id) => {
-    try{
-      await axios.delete("http://localhost:8800/employee"+id)
-      window.location.reload()
-    }catch(err){
+    try {
+      await axios.delete(`http://localhost:8800/employee/${id}`);
+      setEmployee(employee.filter(emp => emp.id !== id));
+      toast.success("Account deleted successfully");
+    } catch (err) {
       console.log(err);
+      toast.error('Failed to delete employee');
     }
-  }
+  };
 
-
-  return(
+  return (
     <div className="emp-layout">
-      <ToastContainer/>
-
+      <ToastContainer />
       <Layout>
         <div className="emp--container">
 
-           {/* EMP POPUP */}
-           <div className="emp--popup">
-            <Popup trigger={open} setTrigger={setOpen}>
-              <div className="emp--popup--container">
+          {/* EMP POPUP */}
+          <Popup trigger={open} setTrigger={setOpen}>
+            <div className="emp--popup--container">
               <h3 className="h3--add--header">Add New Employee</h3>
               <form className="emp--form">
-                <input id="username" name="username" type="text" className="emp--input" required placeholder="Input username..." onChange={handleChange}/>
-                <input id="password" name="password" type="password" className="emp--input" required placeholder="Input password..." onChange={handleChange}/>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  className="emp--input"
+                  required
+                  placeholder="Input username..."
+                  onChange={handleChange}
+                />
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  className="emp--input"
+                  required
+                  placeholder="Input password..."
+                  onChange={handleChange}
+                />
                 <button className="btn--emp--add" onClick={handleClick}>ADD</button>
               </form>
-              </div>
-            </Popup>
-          </div>
-          {/* EMD POPUP */}
+            </div>
+          </Popup>
+          {/* END EMP POPUP */}
 
           {/* ADD NEW EMP / STAFF */}
-          <button className="btn--add" onClick={() => setOpen(true)}>ADD EMPLOYEE?</button>
+          <button className="btn--add" onClick={() => setOpen(true)}>ADD EMPLOYEE</button>
 
-          <table className="emp--table" style={{textAlign: "center"}}>
+          <table className="emp--table" style={{ textAlign: "center" }}>
             <thead>
               <tr>
                 <th>userID</th>
@@ -111,16 +111,16 @@ export default function Employee() {
               </tr>
             </thead>
             <tbody>
-              {staff.map(emp => (
-                <tr key={emp.userID}>
-                  <td>{emp.userID}</td>
+              {employee.map(emp => (
+                <tr key={emp.id}>
+                  <td>{emp.id}</td>
                   <td>{emp.username}</td>
                   <td>{emp.password}</td>
                   <td>{emp.role}</td>
-                  <td style={{color: emp.status === "active" ? "green" : "red"}}>{emp.status}</td>
+                  <td style={{ color: emp.status === "active" ? "green" : "red" }}>{emp.status}</td>
                   <td className="col--operations">
-                    <button className="btn-archive" onClick={notifySuccess} 
-                    >{emp.status === "archive" ? "UNARCHIVE" : "ARCHIVE"}
+                    <button className="btn-archive" onClick={() => notifySuccess()}>
+                      {emp.status === "archive" ? "UNARCHIVE" : "ARCHIVE"}
                     </button>
                     <button className="btn-update">UPDATE</button>
                     <button className="btn-delete" onClick={() => handleDelete(emp.id)}>DELETE</button>
@@ -132,5 +132,5 @@ export default function Employee() {
         </div>
       </Layout>
     </div>
-  )
-};
+  );
+}

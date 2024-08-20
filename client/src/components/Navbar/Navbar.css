@@ -12,10 +12,13 @@
   transition: width 0.5s ease;
   position: relative;
   box-shadow: 4px 0px 8px rgba(0, 0, 0, 0.5); /* Shadow on the right side */
+  top: 0;
+  left: 0;
 }
 
 .sidebar.collapsed {
   width: 60px;
+  height: 100%;
 }
 
 .sidebar-logo {
@@ -23,7 +26,6 @@
   transition: opacity 0.5s ease;
   border: 5px solid #853d19;
   border-radius: 50%;
-
 }
 
 .top-section {
@@ -84,4 +86,8 @@
   padding-bottom: 20px; /* Optional: adjust spacing from the bottom */
 }
 
-
+.error--message{
+  color: red;
+  text-align: center;
+  margin-top: 12px;
+}

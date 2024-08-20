@@ -1,0 +1,81 @@
+/* PrintableInvoice.css */
+.receipt--container {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f4fa;
+  width: 300px;
+  margin: 20px auto;
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 3px;
+  padding: 30px;
+}
+
+.title {
+  text-align: center;
+  color: #000;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title img {
+  width: 80px;
+  border-radius: 50%;
+  margin-right: 10px;
+  border: 6px solid #b04d1c;
+}
+
+.invoice-details p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.invoice-items {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.invoice-items td {
+  padding: 8px 0;
+}
+
+.invoice-items .alignright {
+  text-align: right;
+}
+
+.alignright .bup {
+  text-align: right;
+  padding: 8px 0 ;
+}
+
+.invoice-items .total {
+  border-top: 2px solid #333;
+  font-weight: 700;
+}
+
+tbody:first-child{
+  border-top: 1px solid black;
+  padding-top: 42px;
+}
+
+.grra {
+  border-bottom: 2px solid black;
+}
+
+.address {
+  padding: 16px;
+  margin-top: 20px;
+  text-align: center;
+}
+.footer{
+  display: block;
+  margin: auto;
+  padding: 16px;
+  text-align: center;
+  width: 100%;
+  margin-top: 20px;
+}
