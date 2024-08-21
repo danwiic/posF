@@ -36,3 +36,7 @@
   font-size: 1.5rem;
   cursor: pointer;
 }
+
+.close-btn:hover{
+  color: grey;
+}

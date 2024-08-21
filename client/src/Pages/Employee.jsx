@@ -15,7 +15,8 @@ export default function Employee() {
   const [employee, setEmployee] = useState([]);
   const [emp, setEmp] = useState({
     username: "",
-    password: ""
+    password: "",
+    forgotKey: ""
   });
 
   // Move fetchStaff function outside useEffect
@@ -34,7 +35,7 @@ export default function Employee() {
 
   const fetchArch = async () => {
     try {
-      const res = await axios.get("http://localhost:8800/archive");
+      const res = await axios.get("http://localhost:8800/archive/staff");
       setArcEmp(res.data); 
     } catch (err) {
       console.log("Error:", err);
@@ -59,7 +60,8 @@ export default function Employee() {
       notifySuccess();
       setEmp({
         username: '',
-        password: ''
+        password: '',
+        forgotKey: ''
       });
       setOpen(false); // Close popup after successful addition
       fetchStaff(); // Fetch the updated employee list
@@ -127,6 +129,7 @@ export default function Employee() {
                   required
                   placeholder="Input username..."
                   onChange={handleChange}
+                  value={emp.username}
                 />
                 <input
                   id="password"
@@ -136,15 +139,17 @@ export default function Employee() {
                   required
                   placeholder="Input password..."
                   onChange={handleChange}
+                  value={emp.password}
                 />
                  <input
-                  id="key"
-                  name="key"
+                  id="forgotKey"
+                  name="forgotKey"
                   type="text"
                   className="emp--input"
                   required
                   placeholder="Input key..."
                   onChange={handleChange}
+                  value={emp.forgotKey}
                 />
                 <button className="btn--emp--add" onClick={handleClick}>ADD</button>
               </form>

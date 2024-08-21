@@ -62,8 +62,17 @@ app.get('/admins', (req, res) => {
 
 
 // SELECT ALL EMPLOYEES  THAT IS UNARCHIVE
-app.get('/archive', (req, res) => {
-  const q = "SELECT * FROM users WHERE status = 'archive'"
+app.get('/archive/staff', (req, res) => {
+  const q = "SELECT * FROM users WHERE status = 'archive' AND role = 'staff'"
+  db.query(q, (err,data)=> {
+    if(err) return res.json(err)
+    return res.json(data)
+  })
+});
+
+// SELECT ALL ADMIN  THAT IS UNARCHIVE
+app.get('/archive/admin', (req, res) => {
+  const q = "SELECT * FROM users WHERE status = 'archive' AND role = 'admin'"
   db.query(q, (err,data)=> {
     if(err) return res.json(err)
     return res.json(data)
@@ -105,6 +114,28 @@ app.delete('/employee/:id', (req, res) => {
   })
 })
 
+// DELETE ADMIN
+app.delete('/admins/:id', (req, res) => {
+  const adminID = req.params.id
+  const q = "DELETE FROM users WHERE id = ?"
+
+  db.query(q, [adminID], (err, data) => {
+    if(err) return res.json(err)
+      return res.json("Staff deleted successfully")
+  })
+})
+
+// DELETE STAFF
+app.delete('/employee/:id', (req, res) => {
+  const empId = req.params.id
+  const q = "DELETE FROM users WHERE id = ?"
+
+  db.query(q, [empId], (err, data) => {
+    if(err) return res.json(err)
+      return res.json("Staff deleted successfully")
+  })
+})
+
 // CREATE DEFAULT EMPLOYEE
 app.post("/register", (req, res) => {
           // CHECK IF USER EXISTS
@@ -116,7 +147,7 @@ app.post("/register", (req, res) => {
     if (result.length > 0) {
       return res.json({ Status: "Error", Error: "User already exists" });
     } else {
-      const q = "INSERT INTO users (username, password) VALUES (?)";
+      const q = "INSERT INTO users (username, password, forgot_pass_key) VALUES (?)";
 
       bcrypt.hash(req.body.password.toString(), 10, (err, hash) => {
         if (err) return res.json({ Error: "Error in hashing password" });
@@ -124,6 +155,7 @@ app.post("/register", (req, res) => {
         const values = [
           req.body.username,
           hash,
+          req.body.forgotKey
         ];
 
         db.query(q, [values], (err, result) => {
@@ -138,7 +170,7 @@ app.post("/register", (req, res) => {
 // ======================CREATE ADMIN ACCOUNT=================================>
 
 
-  app.post("/admin", (req, res) => {
+  app.post("/register/admin", (req, res) => {
     // CHECK IF USER EXIST
  
     const checkUser = "SELECT * FROM users WHERE username = ?";
@@ -149,7 +181,7 @@ app.post("/register", (req, res) => {
     if (result.length > 0) {
       return res.json({ Status: "Error", Error: "User already exists" });
     } else {
-      const q = "INSERT INTO users (username, password, role) VALUES (?)";
+      const q = "INSERT INTO users (username, password, role, forgot_pass_key) VALUES (?)";
 
       bcrypt.hash(req.body.password.toString(), 10, (err, hash) => {
         if (err) return res.json({ Error: "Error in hashing password" });
@@ -157,7 +189,8 @@ app.post("/register", (req, res) => {
         const values = [
           req.body.username,
           hash,
-          req.body.role
+          req.body.role,
+          req.body.forgotKey
         ];
 
         db.query(q, [values], (err, result) => {
