@@ -32,7 +32,6 @@ export default function Navbar({ children }) {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('user');
       navigate('/'); 
-      window.location.reload();
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -44,7 +43,7 @@ export default function Navbar({ children }) {
     { path: '/products', name: "Inventory", icon: <MdOutlineProductionQuantityLimits /> },
     { path: '/pos', name: "POS", icon: <MdSell /> },
     { path: '/employee', name: "Employees", icon: <CiUser /> },
-    { path: '/users', name: "Users", icon: <IoPeopleOutline /> },
+    { path: '/users', name: "Administrator", icon: <IoPeopleOutline /> },
     { path: '#', name: "Logout", icon: <CiLogout />, onClick: handleLogout },
   ] : [
     { path: '/pos', name: "POS", icon: <MdSell /> },

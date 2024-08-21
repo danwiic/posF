@@ -74,7 +74,8 @@ export default function Employee() {
       await axios.delete(`http://localhost:8800/employee/${id}`);
       setEmployee(employee.filter(emp => emp.id !== id));
       toast.success("Account deleted successfully");
-      fetchStaff(); // Fetch the updated employee list after delete
+      fetchStaff(); 
+      fetchArch(); 
     } catch (err) {
       console.log(err);
       toast.error('Failed to delete employee');
@@ -115,8 +116,8 @@ export default function Employee() {
 
           {/* EMP POPUP */}
           <Popup trigger={open} setTrigger={setOpen}>
+          <h3 className="h3--add--header">Add New Employee</h3>
             <div className="emp--popup--container">
-              <h3 className="h3--add--header">Add New Employee</h3>
               <form className="emp--form">
                 <input
                   id="username"
@@ -134,6 +135,15 @@ export default function Employee() {
                   className="emp--input"
                   required
                   placeholder="Input password..."
+                  onChange={handleChange}
+                />
+                 <input
+                  id="key"
+                  name="key"
+                  type="text"
+                  className="emp--input"
+                  required
+                  placeholder="Input key..."
                   onChange={handleChange}
                 />
                 <button className="btn--emp--add" onClick={handleClick}>ADD</button>

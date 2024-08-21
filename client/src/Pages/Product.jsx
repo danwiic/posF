@@ -15,72 +15,78 @@ export default function Products() {
 
   const handleAddProduct = () => {
     const newProduct = {
+      id: stockData.length + 1, // Example of adding ID automatically, adjust as needed
       name: "New Drink",
       sizes: [
-        { size: "Small", quantity: 10 },
-        { size: "Medium", quantity: 10 },
-        { size: "Large", quantity: 10 }
+        { size: "Medio", quantity: 10 },
+        { size: "Grande", quantity: 10 }
       ]
     };
     setStockData([...stockData, newProduct]);
   };
-  return(
+
+  return (
     <div className="stock--main--container">
-    <Layout>
-      <div className="stock-container">
+      <Layout>
+        <div className="stock-container">
 
-    <button onClick={handleAddProduct} className='btn--add'>Add New Product</button>
-      <table className='prod--table'>
+          <button onClick={handleAddProduct} className='btn--add'>Add New Product</button>
+          <table className='prod--table'>
 
-        <thead className='prod--th--head'>
-          <tr style={{border: "1px solid gray"}}>
-            <th style={{border: "1px solid gray"}}>Product Name</th>
-            <th style={{border: "1px solid gray"}}>Size</th>
-            <th style={{border: "1px solid gray"}}>Quantity</th>
-            <th style={{border: "1px solid gray"}}>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody className='prod--td--body' >
-          {stockData.map((product, productIndex) =>
-            product.sizes.map((size, sizeIndex) => (
-              <tr key={`${product.name}-${size.size}`} style={{border: "1px solid black"}}>
-                {sizeIndex === 0 && (
-                  <td style={{border: "1px solid gray"}} rowSpan={product.sizes.length}>{product.name}</td>
-                )}
-                <td style={{border: "1px solid gray"}}>{size.size}</td>
-                <td style={{border: "1px solid gray"}}>{size.quantity}</td>
-                <td style={{border: "1px solid gray"}} className='prod--table--operation'>
-                  <button className='btn--prod--update'
-                    onClick={() =>
-                      handleUpdateQuantity(
-                        productIndex,
-                        sizeIndex,
-                        size.quantity + 1
-                      )
-                    }
-                  >
-                    UPDATE
-                  </button>
-                  <button className='btn--prod--delete'
-                  onClick={() =>
-                    handleUpdateQuantity(
-                      productIndex,
-                      sizeIndex,
-                      size.quantity - 1
-                    )
-                  }
-                  
-                  >ARCHIVE</button>
-                </td>
+            <thead className='prod--th--head'>
+              <tr className='product--info--table'>
+                <th className='product--info--table'>Product ID</th>
+                <th className='product--info--table'>Product Name</th>
+                <th className='product--info--table'>Size</th>
+                <th className='product--info--table'>Quantity</th>
+                <th className='product--info--table'>Actions</th>
               </tr>
-            ))
-          )}
-        </tbody>
+            </thead>
 
-      </table>
-      </div>
-    </Layout>
+            <tbody className='prod--td--body'>
+              {stockData.map((product, productIndex) =>
+                product.sizes.map((size, sizeIndex) => (
+                  <tr key={`${product.name}-${size.size}`} style={{border: "1px solid black"}}>
+                    {sizeIndex === 0 && (
+                      <>
+                        <td className='product--info--table' rowSpan={product.sizes.length}>{product.id}</td>
+                        <td className='product--info--table' rowSpan={product.sizes.length}>{product.name}</td>
+                      </>
+                    )}
+                    <td className='product--info--table'>{size.size}</td>
+                    <td className='product--info--table'>{size.quantity}</td>
+                    <td className='product--info--table prod--table--operation'>
+                      <button className='btn--prod--update'
+                        onClick={() =>
+                          handleUpdateQuantity(
+                            productIndex,
+                            sizeIndex,
+                            size.quantity + 1
+                          )
+                        }
+                      >
+                        ADD
+                      </button>
+                      <button className='btn--prod--delete'
+                        onClick={() =>
+                          handleUpdateQuantity(
+                            productIndex,
+                            sizeIndex,
+                            size.quantity - 1
+                          )
+                        }
+                      >
+                        ARCHIVE
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+
+          </table>
+        </div>
+      </Layout>
     </div>
   )
 };

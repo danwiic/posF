@@ -17,11 +17,13 @@ export default function Dashboard() {
       {/* POP UP COMPONENT ===================================> */}
     <div className="dash--popup">
       <Popup trigger={open} setTrigger={setOpen} className="bg-dash">
-      <h1 style={{marginBottom: "15px", textAlign: "center"}}>ITEMS ORDERED</h1>
+        <h1 style={{marginBottom: "15px", textAlign: "center", fontSize: "20px", fontWeight: "800"}}>
+          ITEMS ORDERED
+        </h1>
       <table className='order--table'>
       <thead>
         <tr>
-          <th>OrderID</th>
+          <th>ProductID</th>
           <th>Item Name</th>
           <th>Quantity</th>
           <th>Price</th>
@@ -91,9 +93,11 @@ export default function Dashboard() {
     <table className='order--table'>
       <thead>
         <tr>
-          <th>OrderID</th>
+          <th>TransactionID</th>
           <th>Items Ordered</th>
+          <th>Order Quantity</th>
           <th>Order Date</th>
+          <th>Payment Method</th>
           <th>Total Amount</th>
         </tr>
       </thead>
@@ -101,39 +105,51 @@ export default function Dashboard() {
         <tr>
           <td>00001</td>
           <td>
-            <button className='view--orders' onClick={() => setOpen(true)}>SEE LIST</button>
+            <button className='view--orders' onClick={() => setOpen(true)}>VIEW</button>
           </td>
+          <td>3</td>
           <td>08-15-2024</td>
+          <td>Cash</td>
           <td>₱260</td>
         </tr>
         <tr>
           <td>00002</td>
-          <td><button className='view--orders' onClick={() => setOpen(true)}>SEE LIST</button></td>
+          <td><button className='view--orders' onClick={() => setOpen(true)}>VIEW</button></td>
+          <td>3</td>
           <td>08-15-2024</td>
+          <td>Cash</td>
           <td>₱260</td>
         </tr>
         <tr>
           <td>00003</td>
-          <td><button className='view--orders' onClick={() => setOpen(true)}>SEE LIST</button></td>
+          <td><button className='view--orders' onClick={() => setOpen(true)}>VIEW</button></td>
+          <td>3</td>
           <td>08-15-2024</td>
+          <td>Cash</td>
           <td>₱260</td>
         </tr>
         <tr>
           <td>00004</td>
-          <td><button className='view--orders' onClick={() => setOpen(true)}>SEE LIST</button></td>
+          <td><button className='view--orders' onClick={() => setOpen(true)}>VIEW</button></td>
+          <td>3</td>
           <td>08-15-2024</td>
+          <td>Cash</td>
           <td>₱260</td>
         </tr>
         <tr>
           <td>00005</td>
-          <td><button className='view--orders' onClick={() => setOpen(true)}>SEE LIST</button></td>
+          <td><button className='view--orders' onClick={() => setOpen(true)}>VIEW</button></td>
+          <td>3</td>
           <td>08-15-2024</td>
+          <td>Cash</td>
           <td>₱260</td>
         </tr>
         <tr>
           <td>00006</td>
-          <td><button className='view--orders' onClick={() => setOpen(true)}>SEE LIST</button></td>
+          <td><button className='view--orders' onClick={() => setOpen(true)}>VIEW</button></td>
+          <td>3</td>
           <td>08-15-2024</td>
+          <td>Cash</td>
           <td>₱260</td>
         </tr>
       </tbody>

@@ -51,6 +51,16 @@ app.get('/employee', (req, res) => {
   })
 });
 
+// SELECT ALL ADMIN
+app.get('/admins', (req, res) => {
+  const q = "SELECT * FROM users WHERE status = 'active' AND role = 'admin'"
+  db.query(q, (err,data)=> {
+    if(err) return res.json(err)
+    return res.json(data)
+  })
+});
+
+
 // SELECT ALL EMPLOYEES  THAT IS UNARCHIVE
 app.get('/archive', (req, res) => {
   const q = "SELECT * FROM users WHERE status = 'archive'"

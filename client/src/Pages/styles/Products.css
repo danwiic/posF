@@ -59,6 +59,10 @@
   background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,198,123,1) 0%, rgba(199,171,223,1) 100%); 
 }
 
+.product--info--table{
+  border: 1px solid gray;
+}
+
 .prod--table, .prod--th--head, .prod--td--body{
   border-collapse: collapse;
   padding: 5px;

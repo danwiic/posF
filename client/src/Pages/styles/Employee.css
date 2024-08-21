@@ -127,22 +127,19 @@
   background-color: #4CAF50;
   padding: 8px;
   border-radius: 4px;
-  text-align: center;
-  margin: 0;
+  width: 220px;
+  border-radius: 0 25px 25px 0;
 }
 
 .emp--popup--container {
-  background-color: white;
   padding: 20px;
   border-radius: 10px;
   width: 100%; /* Increased width */
   height: auto; /* Allow height to adjust based on content */
-  min-height: 400px; /* Increased minimum height */
-  box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 15px;
+  min-height: 300px; /* Increased minimum height */
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Center content vertically */
-  align-items: center; /* Center content horizontally */
+  justify-content: center; /* Center content vertically */ /* Center content horizontally */
 }
 
 .emp--form {

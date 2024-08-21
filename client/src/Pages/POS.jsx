@@ -18,12 +18,12 @@ export default function POS() {
 
   const receiptRef = useRef(null); // Ref to control receipt rendering
 
-  const handleQuantityChange = (drinkIndex, sizeIndex, change) => {
+  const handleQuantityChange = (drinkIndex, sizeIndex, value) => {
     const newQuantities = [...quantities];
-    const newSizeQuantity = newQuantities[drinkIndex].sizes[sizeIndex] + change;
+    const newSizeQuantity = parseInt(value, 10);
 
     if (newSizeQuantity >= 0) {
-      newQuantities[drinkIndex].sizes[sizeIndex] = newSizeQuantity;
+      newQuantities[drinkIndex].sizes[sizeIndex] = isNaN(newSizeQuantity) ? 0 : newSizeQuantity;
       setQuantities(newQuantities);
     }
   };
@@ -74,89 +74,7 @@ export default function POS() {
   );
 
   const printReceipt = () => {
-    if (receiptRef.current) {
-      const receiptWindow = window.open('', '', 'width=800,height=600');
-      receiptWindow.document.write('<html><head><title>Receipt</title>');
-      receiptWindow.document.write('<style>');
-      receiptWindow.document.write(`
-        .receipt--container {
-          font-family: Arial, sans-serif;
-          margin: 0;
-          padding: 0;
-          background-color: #f0f4fa;
-          width: 300px;
-          margin: 20px auto;
-          background: #fff;
-          border: 1px solid #e9e9e9;
-          border-radius: 3px;
-          padding: 30px;
-        }
-        .title {
-          text-align: center;
-          color: #000;
-          margin-bottom: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .title img {
-          width: 80px;
-          border-radius: 50%;
-          margin-right: 10px;
-          border: 6px solid #b04d1c;
-        }
-        .invoice-details p {
-          margin: 0;
-          font-size: 14px;
-        }
-        .invoice-items {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 20px;
-        }
-        .invoice-items td {
-          padding: 8px 0;
-        }
-        .invoice-items .alignright {
-          text-align: right;
-        }
-        .alignright .bup {
-          text-align: right;
-          padding: 8px 0 ;
-        }
-        .invoice-items .total {
-          border-top: 2px solid #333;
-          font-weight: 700;
-        }
-        tbody:first-child{
-          border-top: 1px solid black;
-          padding-top: 42px;
-        }
-        .grra {
-          border-bottom: 2px solid black;
-        }
-        .address {
-          padding: 16px;
-          margin-top: 20px;
-          text-align: center;
-        }
-        .footer{
-          display: block;
-          margin: auto;
-          padding: 16px;
-          text-align: center;
-          width: 100%;
-          margin-top: 20px;
-        }
-      `);
-      receiptWindow.document.write('</style></head><body>');
-      receiptWindow.document.write(receiptRef.current.innerHTML);
-      receiptWindow.document.write('</body></html>');
-      receiptWindow.document.close();
-      receiptWindow.document.focus();
-      receiptWindow.print();
-      setShowReceipt(false); // Hide receipt after printing
-    }
+      setShowReceipt(false); 
   };
 
   return (
@@ -174,9 +92,15 @@ export default function POS() {
                       {size.size} - ₱{size.price}
                     </div>
                     <div className="quantity-control">
-                      <button onClick={() => handleQuantityChange(drinkIndex, sizeIndex, -1)}>-</button>
-                      <span>{quantities[drinkIndex].sizes[sizeIndex]}</span>
-                      <button onClick={() => handleQuantityChange(drinkIndex, sizeIndex, 1)}>+</button>
+                      <button style={{height: "22px"}} onClick={() => handleQuantityChange(drinkIndex, sizeIndex, quantities[drinkIndex].sizes[sizeIndex] - 1)}>-</button>
+                      <input
+                        type="text"
+                        value={quantities[drinkIndex].sizes[sizeIndex]}
+                        onChange={(e) => handleQuantityChange(drinkIndex, sizeIndex, e.target.value)}
+                        className="quantity-input"
+                        style={{width: "35px", textAlign: "center", height: "22px"}}
+                      />
+                      <button style={{height: "22px"}} onClick={() => handleQuantityChange(drinkIndex, sizeIndex, quantities[drinkIndex].sizes[sizeIndex] + 1)}>+</button>
                     </div>
                   </div>
                 ))}

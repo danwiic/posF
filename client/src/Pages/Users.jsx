@@ -25,7 +25,7 @@ export default function Users() {
                 <input name="username" type="text" className="admin--input" required placeholder="Input username..." />
                 <input name="password" type="password" className="admin--input" required placeholder="Input password..."/>
                 <input name="role" type="text" className="admin--input" required value={"admin"}/>
-                <button className='btn--admin--add'>ADD ADMIN?</button>
+                <button className='btn--admin--add'>ADD ADMIN</button>
               </form>
             </Popup>
           </div>

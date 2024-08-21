@@ -3,9 +3,8 @@
     "id": "1",
     "name": "Lemonade",
     "sizes": [
-      { "size": "Small", "price": 30, "quantity": 50 },
-      { "size": "Medium", "price": 45, "quantity": 40 },
-      { "size": "Large", "price": 55, "quantity": 30 }
+      { "size": "Medio", "price": 30, "quantity": 50 },
+      { "size": "Grande", "price": 45, "quantity": 40 }
     ],
     "image": "lemonade.jpg"
   },
@@ -13,9 +12,8 @@
     "id": "2",
     "name": "Iced Coffee",
     "sizes": [
-      { "size": "Small", "price": 35, "quantity": 60 },
-      { "size": "Medium", "price": 45, "quantity": 45 },
-      { "size": "Large", "price": 60, "quantity": 25 }
+      { "size": "Medio", "price": 35, "quantity": 60 },
+      { "size": "Grande", "price": 45, "quantity": 45 }
     ],
     "image": "iced-coffee.jpg"
   },
@@ -23,9 +21,8 @@
     "id": "3",
     "name": "Milk Tea",
     "sizes": [
-      { "size": "Small", "price": 35, "quantity": 55 },
-      { "size": "Medium", "price": 50, "quantity": 35 },
-      { "size": "Large", "price": 65, "quantity": 20 }
+      { "size": "Medio", "price": 35, "quantity": 55 },
+      { "size": "Grande", "price": 50, "quantity": 35 }
     ],
     "image": "milk-tea.jpg"
   },
@@ -33,9 +30,8 @@
     "id": "4",
     "name": "Smoothie",
     "sizes": [
-      { "size": "Small", "price": 40, "quantity": 40 },
-      { "size": "Medium", "price": 55, "quantity": 30 },
-      { "size": "Large", "price": 70, "quantity": 15 }
+      { "size": "Medio", "price": 40, "quantity": 40 },
+      { "size": "Grande", "price": 55, "quantity": 30 }
     ],
     "image": "smoothie.jpg"
   },
@@ -43,9 +39,8 @@
     "id": "5",
     "name": "Hot Chocolate",
     "sizes": [
-      { "size": "Small", "price": 60, "quantity": 25 },
-      { "size": "Medium", "price": 70, "quantity": 20 },
-      { "size": "Large", "price": 80, "quantity": 10 }
+      { "size": "Medio", "price": 60, "quantity": 25 },
+      { "size": "Grande", "price": 70, "quantity": 20 }
     ],
     "image": "hot-choco.jpg"
   }
