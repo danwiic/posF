@@ -74,5 +74,19 @@
 
 }
 
+a{
+  text-decoration: none;
+}
 
+.forgot--password{
+  margin-top: 14px;
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  text-align: center;
+}
+
+.forgot--password:hover{
+  text-decoration: underline;
+}
 

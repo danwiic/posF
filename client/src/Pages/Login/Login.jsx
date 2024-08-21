@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './Login.css';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useUser } from '../../Context/UserContext.jsx';
 
 export default function Login() {
@@ -64,6 +64,7 @@ export default function Login() {
             />
           </div>
           <button className='btn-Login'>Login</button>
+          <Link to="#"><p className='forgot--password'>Forgot password?</p></Link>
           {error && <p style={{ color: 'red', textAlign: "center", marginTop: "10px" }}>{error}</p>}
         </form>
       </div>
