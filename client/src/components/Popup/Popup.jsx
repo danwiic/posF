@@ -1,4 +1,3 @@
-import React from 'react';
 import './Popup.css'; // Add appropriate styling
 
 const Popup = ({ trigger, setTrigger, children, className }) => {

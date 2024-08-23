@@ -99,6 +99,7 @@ export default function Dashboard() {
           <th>Order Date</th>
           <th>Payment Method</th>
           <th>Total Amount</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -111,6 +112,7 @@ export default function Dashboard() {
           <td>08-15-2024</td>
           <td>Cash</td>
           <td>₱260</td>
+          <td><button>VOID TRANSACTION</button></td>
         </tr>
         <tr>
           <td>00002</td>
@@ -119,6 +121,7 @@ export default function Dashboard() {
           <td>08-15-2024</td>
           <td>Cash</td>
           <td>₱260</td>
+           <td><button>VOID TRANSACTION</button></td>
         </tr>
         <tr>
           <td>00003</td>
@@ -127,6 +130,7 @@ export default function Dashboard() {
           <td>08-15-2024</td>
           <td>Cash</td>
           <td>₱260</td>
+           <td><button>VOID TRANSACTION</button></td>
         </tr>
         <tr>
           <td>00004</td>
@@ -135,6 +139,7 @@ export default function Dashboard() {
           <td>08-15-2024</td>
           <td>Cash</td>
           <td>₱260</td>
+           <td><button>VOID TRANSACTION</button></td>
         </tr>
         <tr>
           <td>00005</td>
@@ -143,6 +148,7 @@ export default function Dashboard() {
           <td>08-15-2024</td>
           <td>Cash</td>
           <td>₱260</td>
+           <td><button>VOID TRANSACTION</button></td>
         </tr>
         <tr>
           <td>00006</td>
@@ -151,6 +157,7 @@ export default function Dashboard() {
           <td>08-15-2024</td>
           <td>Cash</td>
           <td>₱260</td>
+           <td><button>VOID TRANSACTION</button></td>
         </tr>
       </tbody>
     </table>

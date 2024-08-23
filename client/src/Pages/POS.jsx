@@ -1,22 +1,53 @@
 import Layout from "../components/Navbar/Layout";
-import products from '../../JSON FILES/products.json';
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
 import "./styles/POS.css";
 import Receipt from "../components/Receipt/Receipt";
+import axios from "axios";
 
 export default function POS() {
-  const [quantities, setQuantities] = useState(
-    products.map(drink => ({
-      name: drink.name,
-      sizes: drink.sizes.map(() => 0) // Initialize quantities to 0
-    }))
-  );
-
+  const [quantities, setQuantities] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [payment, setPayment] = useState(0);
   const [change, setChange] = useState(0);
   const [showReceipt, setShowReceipt] = useState(false); // State to control receipt visibility
 
-  const receiptRef = useRef(null); // Ref to control receipt rendering
+
+    // Fetch categories
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get("http://localhost:8800/categories");
+        setCategories(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+  
+    // Fetch all products by default
+    const fetchProducts = async (categoryID) => {
+      try {
+        const res = await axios.get("http://localhost:8800/product", {
+          params: { categoryID: categoryID || 0 }
+        });
+        console.log('Products fetched:', res.data); // Log the fetched products
+        setProducts(res.data);
+        setQuantities(res.data.map(drink => ({
+          name: drink.prodName,
+          sizes: Array.from({ length: drink.sizes.length }, () => 0) // Initialize quantities to 0
+        })));
+      } catch (err) {
+        console.error('Error fetching products:', err); // Log any error
+      }
+    };
+
+    useEffect(() => {
+      fetchCategories();
+      fetchProducts(); // Ensure this fetches all products
+    }, []);
+  
+
+  
 
   const handleQuantityChange = (drinkIndex, sizeIndex, value) => {
     const newQuantities = [...quantities];
@@ -31,8 +62,8 @@ export default function POS() {
   const handleClearOrder = () => {
     setQuantities(
       products.map(drink => ({
-        name: drink.name,
-        sizes: drink.sizes.map(() => 0)
+        name: drink.prodName,
+        sizes: Array.from({ length: drink.sizes.length }, () => 0)
       }))
     );
     setPayment(0);
@@ -66,7 +97,7 @@ export default function POS() {
   const receiptItems = quantities.flatMap((drink, drinkIndex) =>
     drink.sizes.map((quantity, sizeIndex) =>
       quantity > 0 ? {
-        name: `${drink.name} (${products[drinkIndex].sizes[sizeIndex].size})`,
+        name: `${drink.name} (${products[drinkIndex].sizes[sizeIndex].sizeName})`,
         price: quantity * products[drinkIndex].sizes[sizeIndex].price,
         quantity // Add quantity to the item
       } : null
@@ -74,22 +105,61 @@ export default function POS() {
   );
 
   const printReceipt = () => {
-      setShowReceipt(false); 
+    setShowReceipt(false); 
   };
+  const handleCategorySelect = async (categoryID) => {
+    setSelectedCategory(categoryID);
+    try {
+      const res = await axios.get("http://localhost:8800/product", {
+        params: { categoryID: categoryID || 0 }
+      });
+      console.log('Products after category select:', res.data); // Log the fetched products
+      setProducts(res.data);
+      setQuantities(res.data.map(drink => ({
+        name: drink.prodName,
+        sizes: Array.from({ length: drink.sizes.length }, () => 0) // Initialize quantities to 0
+      })));
+    } catch (err) {
+      console.error('Error fetching products for category:', err); // Log any error
+    }
+  };
+  
 
   return (
     <div className="pos--container">
-      <Layout>
+    <Layout>
+    <div className="category--btn">
+          <button
+            className={`cat--selection ${selectedCategory === null ? 'active' : ''}`}
+            onClick={() => handleCategorySelect(null)} // Fetch all products when "All" is selected
+          >
+            All
+          </button>
+
+          {categories.map(category => (
+            <button
+              className={`cat--selection ${selectedCategory === category.categoryID ? 'active' : ''}`}
+              key={category.categoryID}
+              onClick={() => handleCategorySelect(category.categoryID)}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
+
         <div className="pos-list">
-          {products.map((drink, drinkIndex) => (
+              {products.length === 0 ? (
+          <p>No products available</p>
+        ) : (
+          products.map((drink, drinkIndex) => (
             <div key={drinkIndex} className="pos-item">
-              <img src={`/products/${drink.image}`} className="pos--prod--image" alt={drink.name} />
-              <h2>{drink.name}</h2>
+              {drink.image && <img src={drink.image} className="pos--prod--image" alt={drink.prodName}/>}
+              <h2>{drink.prodName}</h2>
               <div className="pos-item-content">
                 {drink.sizes.map((size, sizeIndex) => (
                   <div key={sizeIndex} className="size-control-container">
                     <div className="size-info">
-                      {size.size} - ₱{size.price}
+                      {size.sizeName} - ₱{size.price}
                     </div>
                     <div className="quantity-control">
                       <button style={{height: "22px"}} onClick={() => handleQuantityChange(drinkIndex, sizeIndex, quantities[drinkIndex].sizes[sizeIndex] - 1)}>-</button>
@@ -106,7 +176,8 @@ export default function POS() {
                 ))}
               </div>
             </div>
-          ))}
+          ))
+        )}
 
           <div className="sticky-summary">
             <h2>Order Summary</h2>

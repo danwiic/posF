@@ -4,17 +4,11 @@ import cors from 'cors';
 import { db } from './connection.js';
 import bcrypt from "bcrypt"
 import jwt from 'jsonwebtoken'
+import multer from 'multer';
 
 const app = express()
 
-
-import authRoute from "./routes/auth.js"
-import dashboardRoute from "./routes/dashboard.js"
-
-
 app.use(cookieParser())
-app.use("/server/auth", authRoute)
-app.use("/server/dashboard", dashboardRoute)
 
 // middlewares
 app.use(express.json())
@@ -253,6 +247,257 @@ app.post("/logout", (req, res) => {
     sameSite: "none"
   }).status(200).json("User has been logout")
 })
+
+// FETCH PRODUCTS
+
+app.get('/products', (req, res) => {
+  // SQL query to retrieve product details with sizes and quantities
+  const query = `
+    SELECT p.productID, p.prodName, s.sizeName, ps.price, ps.quantity
+    FROM ProductSizes ps
+    JOIN Products p ON ps.productID = p.productID
+    JOIN Sizes s ON ps.sizeID = s.sizeID
+  `;
+
+  // Execute the query
+  db.query(query, (error, results) => {
+    if (error) {
+      console.error('Database query error:', error);
+      return res.status(500).send('Server error');
+    }
+    // Send the results as JSON
+    res.json(results);
+  });
+});
+
+
+//========================================== ADDING NEW PRODUCTS =====================================================
+
+// Configure multer for file uploads
+const storage = multer.memoryStorage(); // Store files in memory
+const upload = multer({ storage: storage });
+
+
+app.post('/add-product', upload.single('image'), (req, res) => {
+  const { prodName, priceMedio, priceGrande, quantityMedio, quantityGrande, category, newCategory } = req.body;
+  const image = req.file ? req.file.buffer : null; // Image buffer
+  const mimeType = req.file ? req.file.mimetype : null; // MIME type
+
+  if (!prodName || !priceMedio || !priceGrande || !quantityMedio || !quantityGrande) {
+    return res.status(400).send('Missing required fields');
+  }
+
+  db.beginTransaction(err => {
+    if (err) {
+      console.error('Transaction start error:', err);
+      return res.status(500).send('Server error');
+    }
+
+    let categoryId;
+    let insertCategoryQuery;
+    let categoryValues;
+
+    if (category === 'new' && newCategory) {
+      insertCategoryQuery = 'INSERT INTO drink_categories (name) VALUES (?)';
+      categoryValues = [newCategory];
+    } else {
+      categoryId = category; // Use the selected category ID
+      insertCategoryQuery = 'SELECT categoryID FROM drink_categories WHERE categoryID = ?';
+      categoryValues = [categoryId];
+    }
+
+    db.query(insertCategoryQuery, categoryValues, (error, results) => {
+      if (error) {
+        return db.rollback(() => {
+          console.error('Error inserting/selecting category:', error);
+          res.status(500).send('Server error');
+        });
+      }
+
+      if (category === 'new' && newCategory) {
+        // Handle new category insertion
+        categoryId = results.insertId;
+      } else {
+        // Ensure category exists
+        if (results.length === 0) {
+          return db.rollback(() => {
+            console.error('Category not found');
+            res.status(400).send('Category not found');
+          });
+        }
+        categoryId = results[0].categoryID;
+      }
+
+      const insertProductQuery = `
+        INSERT INTO Products (prodName, categoryID)
+        VALUES (?, ?)
+      `;
+      const productValues = [prodName, categoryId];
+
+      db.query(insertProductQuery, productValues, (error, results) => {
+        if (error) {
+          return db.rollback(() => {
+            console.error('Error inserting product:', error);
+            res.status(500).send('Server error');
+          });
+        }
+
+        const productID = results.insertId;
+
+        // Insert product sizes
+        const insertProductSizeQuery = `
+          INSERT INTO ProductSizes (productID, sizeID, price, quantity)
+          VALUES ?
+        `;
+        const sizes = [
+          [productID, 1, priceMedio, quantityMedio],  // Assuming sizeID 1 is for Medio
+          [productID, 2, priceGrande, quantityGrande] // Assuming sizeID 2 is for Grande
+        ];
+
+        db.query(insertProductSizeQuery, [sizes], (error) => {
+          if (error) {
+            return db.rollback(() => {
+              console.error('Error inserting product sizes:', error);
+              res.status(500).send('Server error');
+            });
+          }
+
+          if (image) {
+            const insertImageQuery = 'INSERT INTO Images (productID, imageData, mimeType) VALUES (?, ?, ?)';
+            db.query(insertImageQuery, [productID, image, mimeType], (error) => {
+              if (error) {
+                return db.rollback(() => {
+                  console.error('Error inserting image:', error);
+                  res.status(500).send('Server error');
+                });
+              }
+
+              db.commit(err => {
+                if (err) {
+                  return db.rollback(() => {
+                    console.error('Transaction commit error:', err);
+                    res.status(500).send('Server error');
+                  });
+                }
+
+                res.status(200).send('Product added successfully');
+              });
+            });
+          } else {
+            db.commit(err => {
+              if (err) {
+                return db.rollback(() => {
+                  console.error('Transaction commit error:', err);
+                  res.status(500).send('Server error');
+                });
+              }
+
+              res.status(200).send('Product added successfully');
+            });
+          }
+        });
+      });
+    });
+  });
+});
+
+// GET ALL CATEGORIES IN CATEGORY TABLE
+app.get('/categories', (req, res) => {
+  const q = 'SELECT categoryID, name FROM drink_categories';
+
+  db.query(q, (error, results) => {
+    if (error) {
+      console.error('Error fetching categories:', error);
+      return res.status(500).send('Server error');
+    }
+    res.json(results);
+  });
+});
+
+const toBase64 = (buffer, mimeType) => `data:${mimeType};base64,${buffer.toString('base64')}`;
+
+// Get products with images
+app.get('/product', (req, res) => {
+  const categoryID = req.query.categoryID || 0;
+
+  // Construct the query conditionally
+  let q = `
+    SELECT 
+      p.productID,
+      p.prodName,
+      ps.sizeID,
+      ps.price,
+      ps.quantity,
+      s.sizeName,
+      i.imageData,
+      i.mimeType
+    FROM Products p
+    JOIN ProductSizes ps ON p.productID = ps.productID
+    JOIN Sizes s ON ps.sizeID = s.sizeID
+    LEFT JOIN Images i ON p.productID = i.productID
+    WHERE p.categoryID = ?`;
+
+  if (categoryID === '0') {
+    // Adjust the query if categoryID is 0
+    q = `
+      SELECT 
+        p.productID,
+        p.prodName,
+        ps.sizeID,
+        ps.price,
+        ps.quantity,
+        s.sizeName,
+        i.imageData,
+        i.mimeType
+      FROM Products p
+      JOIN ProductSizes ps ON p.productID = ps.productID
+      JOIN Sizes s ON ps.sizeID = s.sizeID
+      LEFT JOIN Images i ON p.productID = i.productID
+    `;
+  }
+
+  db.query(q, [categoryID], (err, results) => {
+    if (err) {
+      console.error('Error executing query:', err); // Log any error
+      return res.status(500).json({ error: err.message });
+    }
+
+    // Log the results before sending
+    console.log('Products fetched from DB:', results);
+
+    const products = results.reduce((acc, row) => {
+      let product = acc.find(p => p.productID === row.productID);
+      if (!product) {
+        product = {
+          productID: row.productID,
+          prodName: row.prodName,
+          sizes: [],
+          image: row.imageData ? toBase64(row.imageData, row.mimeType) : null // Use the correct MIME type
+        };
+        acc.push(product);
+      }
+    
+      product.sizes.push({
+        sizeID: row.sizeID,
+        sizeName: row.sizeName,
+        price: row.price,
+        quantity: row.quantity
+      });
+    
+      return acc;
+    }, []);
+    
+
+    res.json(products);
+  });
+});
+
+
+
+
+
+
+
 
 // CHECK IF server is running
 app.listen(8800, () => {
