@@ -1,11 +1,14 @@
 import "./Receipt.css";
 
-const Receipt = ({ invoiceNumber, items, total, payment, change }) => {
+const Receipt = ({ invoiceNumber, items, total, payment, change, discount }) => {
   const today = new Date();
   const month = today.getMonth() + 1;
   const year = today.getFullYear();
   const date = today.getDate();
   const currentDate = `${month}/${date}/${year}`;
+
+  const discountAmount = total * (discount || 0);
+  const finalTotal = total - discountAmount;
 
   return (
     <div className="receipt--container">
@@ -16,7 +19,7 @@ const Receipt = ({ invoiceNumber, items, total, payment, change }) => {
       <div className="invoice-details">
         <div className="address">Santa Cruz Dalahican, <br /> Cavite City</div>
         <p style={{ textAlign: "center", marginBottom: "10px" }}>{currentDate}</p>
-        <p style={{fontSize: "12px", margin: "30px 0", fontWeight: "600"}} >Transaction ID: {invoiceNumber}</p>
+        <p style={{fontSize: "12px", margin: "30px 0", fontWeight: "600"}} >Transaction ID:{invoiceNumber}</p>
       </div>
       <table className="invoice-items">
         <tbody>
@@ -28,14 +31,19 @@ const Receipt = ({ invoiceNumber, items, total, payment, change }) => {
           ))}
           <tr className="total">
             <td className="alignright cells">
-              <div className="bup infos" style={{ fontSize: "22px", fontWeight: "bold" }}>Total:</div>
+              <div className="bup infos">Subtotal:</div>
+              <div className="bup infos change">Discount:</div>
+              <div className="bup infos"  style={{ fontSize: "20px", fontWeight: "bold" }}>Final Total:</div>
               <div className="bup infos payment">Payment:</div>
               <div className="bup infos change">Change:</div>
+          
             </td>
             <td className="alignright cells">
               <div className="bup total">₱{total.toFixed(2)}</div>
-              <div className="bup">₱{payment.toFixed(2)}</div>
-              <div className="bup">₱{change.toFixed(2)}</div>
+              <div className="bup">₱{discount ? discountAmount.toFixed(2) : (0).toFixed(2)}</div>
+              <div className="bup total">₱{finalTotal.toFixed(2)}</div>
+              <div className="bup">₱{parseFloat(payment).toFixed(2)}</div>
+              <div className="bup">₱{parseFloat(change).toFixed(2)}</div>
             </td>
           </tr>
         </tbody>

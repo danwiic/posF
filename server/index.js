@@ -55,7 +55,7 @@ app.get('/admins', (req, res) => {
 });
 
 
-// SELECT ALL EMPLOYEES  THAT IS UNARCHIVE
+// SELECT ALL EMPLOYEES  THAT IS ARCHIVE
 app.get('/archive/staff', (req, res) => {
   const q = "SELECT * FROM users WHERE status = 'archive' AND role = 'staff'"
   db.query(q, (err,data)=> {
@@ -64,7 +64,7 @@ app.get('/archive/staff', (req, res) => {
   })
 });
 
-// SELECT ALL ADMIN  THAT IS UNARCHIVE
+// SELECT ALL ADMIN  THAT IS ARCHIVE
 app.get('/archive/admin', (req, res) => {
   const q = "SELECT * FROM users WHERE status = 'archive' AND role = 'admin'"
   db.query(q, (err,data)=> {
@@ -251,24 +251,27 @@ app.post("/logout", (req, res) => {
 // FETCH PRODUCTS
 
 app.get('/products', (req, res) => {
-  // SQL query to retrieve product details with sizes and quantities
   const query = `
-    SELECT p.productID, p.prodName, s.sizeName, ps.price, ps.quantity
+    SELECT p.productID, p.prodName, s.sizeName, ps.sizeID, ps.price, ps.quantity
     FROM ProductSizes ps
     JOIN Products p ON ps.productID = p.productID
     JOIN Sizes s ON ps.sizeID = s.sizeID
+    WHERE status = 'active'
   `;
 
-  // Execute the query
   db.query(query, (error, results) => {
     if (error) {
       console.error('Database query error:', error);
       return res.status(500).send('Server error');
     }
-    // Send the results as JSON
+
+    // Log raw results
+    console.log('Raw database query results:', results);
+
     res.json(results);
   });
 });
+
 
 
 //========================================== ADDING NEW PRODUCTS =====================================================
@@ -435,7 +438,7 @@ app.get('/product', (req, res) => {
     JOIN ProductSizes ps ON p.productID = ps.productID
     JOIN Sizes s ON ps.sizeID = s.sizeID
     LEFT JOIN Images i ON p.productID = i.productID
-    WHERE p.categoryID = ?`;
+    WHERE p.categoryID = ? AND status = 'active'`;
 
   if (categoryID === '0') {
     // Adjust the query if categoryID is 0
@@ -453,6 +456,7 @@ app.get('/product', (req, res) => {
       JOIN ProductSizes ps ON p.productID = ps.productID
       JOIN Sizes s ON ps.sizeID = s.sizeID
       LEFT JOIN Images i ON p.productID = i.productID
+      WHERE status = 'active'
     `;
   }
 
@@ -462,8 +466,6 @@ app.get('/product', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
 
-    // Log the results before sending
-    console.log('Products fetched from DB:', results);
 
     const products = results.reduce((acc, row) => {
       let product = acc.find(p => p.productID === row.productID);
@@ -492,6 +494,147 @@ app.get('/product', (req, res) => {
   });
 });
 
+app.get('/archive/products', (req, res) => {
+  const q = `
+    SELECT p.productID, p.prodName, s.sizeName, ps.price, ps.quantity
+    FROM Products p
+    JOIN ProductSizes ps ON p.productID = ps.productID
+    JOIN Sizes s ON ps.sizeID = s.sizeID
+    WHERE p.status = 'archive'
+  `;
+  
+  db.query(q, (err, data) => {
+    if (err) {
+      console.error('Error fetching archived products:', err);
+      return res.status(500).json({ error: 'Failed to fetch archived products' });
+    }
+    return res.json(data);
+  });
+});
+
+// ARCHIVE PRODUCT
+app.put('/product/:id/archive', async (req, res) => {
+  const { id } = req.params;
+  const status = 'archive'; // Set status to 'archived' for archiving
+
+  try {
+    await db.query('UPDATE Products SET status = ? WHERE productID = ?', [status, id]);
+    res.status(200).send("Product archived successfully");
+  } catch (err) {
+    res.status(500).send("Error archiving product: " + err);
+  }
+});
+
+// UNARCHIVE PRODUCT
+app.put('/product/:id/unarchive', async (req, res) => {
+  const { id } = req.params;
+  const status = 'active'; // Set status to 'active' for unarchiving
+
+  try {
+    await db.query('UPDATE Products SET status = ? WHERE productID = ?', [status, id]);
+    res.status(200).send("Product unarchived successfully");
+  } catch (err) {
+    res.status(500).send("Error unarchiving product: " + err);
+  }
+});
+
+// UPDATE PRODUCT
+app.put('/products/:productId/sizes', async (req, res) => {
+  const productId = parseInt(req.params.productId, 10);
+  const sizes = req.body.sizes;
+
+  // Input validation
+  if (!Array.isArray(sizes) || sizes.some(size => !size.sizeId || size.price < 0 || size.quantity < 0)) {
+    return res.status(400).json({ error: 'Invalid input data' });
+  }
+
+  const query = (sql, params) => {
+    return new Promise((resolve, reject) => {
+      db.query(sql, params, (error, results) => {
+        if (error) {
+          console.error('Database query error:', error);
+          return reject(error);
+        }
+        resolve(results);
+      });
+    });
+  };
+
+  try {
+    // Start a transaction
+    await query('START TRANSACTION');
+
+    // Check if the product exists
+    const productExists = await query('SELECT 1 FROM Products WHERE productID = ?', [productId]);
+    if (productExists.length === 0) {
+      throw new Error(`Product with ID ${productId} does not exist.`);
+    }
+
+    // Check if all sizes exist
+    const sizeIds = sizes.map(size => size.sizeId);
+    const existingSizes = await query('SELECT sizeID FROM Sizes WHERE sizeID IN (?)', [sizeIds]);
+    const existingSizeIds = new Set(existingSizes.map(size => size.sizeID));
+
+    for (const size of sizes) {
+      const { sizeId, price, quantity } = size;
+
+      if (!existingSizeIds.has(sizeId)) {
+        throw new Error(`Size with ID ${sizeId} does not exist.`);
+      }
+
+      // Check if the size already exists for the product
+      const existingProductSizes = await query('SELECT * FROM ProductSizes WHERE productID = ? AND sizeID = ?', [productId, sizeId]);
+
+      if (existingProductSizes.length > 0) {
+        // Update the existing size
+        await query('UPDATE ProductSizes SET price = ?, quantity = ? WHERE productID = ? AND sizeID = ?', [price, quantity, productId, sizeId]);
+      } else {
+        // Insert a new size
+        await query('INSERT INTO ProductSizes (productID, sizeID, price, quantity) VALUES (?, ?, ?, ?)', [productId, sizeId, price, quantity]);
+      }
+    }
+
+    // Commit the transaction
+    await query('COMMIT');
+
+    res.status(200).json({
+      message: 'Product sizes updated successfully',
+      updatedProduct: {
+        id: productId,
+        sizes: sizes
+      }
+    });
+  } catch (error) {
+    // Rollback the transaction in case of error
+    await query('ROLLBACK');
+    console.error('Error updating product sizes:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+
+  console.log('Received sizes:', sizes);
+});
+
+
+
+// DELETE PRODUCTS
+app.delete('/product/:id/delete', (req, res) => {
+  const productId = req.params.id;
+  const query = 'DELETE FROM Products WHERE productID = ?';
+
+  db.query(query, [productId], (err, result) => {
+    if (err) {
+      console.error('Error deleting product:', err);
+      return res.status(500).json({ message: 'Error deleting product' });
+    }
+
+    // Check if any rows were affected
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json({ message: 'Product deleted successfully' });
+  });
+});
 
 
 
@@ -504,4 +647,44 @@ app.listen(8800, () => {
   console.log("Server running")
 })
 
+
+
+app.put('/product/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { sizes } = req.body;
+
+    console.log(`Updating product ${id} with sizes:`, sizes);
+
+    if (!sizes || sizes.length === 0) {
+      return res.status(400).json({ error: 'No sizes provided for update' });
+    }
+
+    for (const size of sizes) {
+      const { sizeID, price, quantity } = size;
+
+      if (!sizeID) {
+        console.error('Missing sizeID in request payload');
+        continue;
+      }
+
+      console.log(`Updating sizeID ${sizeID} with price ${price} and quantity ${quantity}`);
+
+      const result = await db.query(
+        'UPDATE ProductSizes SET price = ?, quantity = ? WHERE productID = ? AND sizeID = ?',
+        [price, quantity, id, sizeID]
+      );
+      console.log(`Update result for sizeID ${sizeID}:`, result);
+
+      if (result.affectedRows === 0) {
+        console.error(`No rows updated for productID ${id} and sizeID ${sizeID}`);
+      }
+    }
+
+    res.json({ message: 'Product updated successfully' });
+  } catch (error) {
+    console.error('Error updating product:', error);
+    res.status(500).json({ error: 'Error updating product' });
+  }
+});
 

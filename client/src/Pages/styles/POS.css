@@ -96,7 +96,7 @@
 
 .sticky-summary h2 {
   margin-bottom: 10px;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .sticky-summary ul {
@@ -177,6 +177,10 @@
   margin-top: 8px;
   color: white;
   font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
 }
 
 .pay-btn:hover {
@@ -277,4 +281,21 @@
 
 .print-btn:hover {
   background-color: #45a049;
+}
+
+.pay-discount{
+  border: none;
+  border-radius: 4px;
+  width: 100%;
+  padding: 8px 15px;
+  text-align: center;
+  background-color: #3f91e9;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.pay-discount:hover {
+  background-color: #2b70ba;
 }
