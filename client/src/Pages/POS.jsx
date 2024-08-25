@@ -14,7 +14,9 @@ export default function POS() {
   const [payment, setPayment] = useState(0);
   const [change, setChange] = useState(0);
   const [discount, setDiscount] = useState(0); 
+  const [isDiscountApplied, setIsDiscountApplied] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false); 
+  
 
   // Fetch categories
   const fetchCategories = async () => {
@@ -110,8 +112,17 @@ export default function POS() {
   };
 
   const handleApplyDiscount = () => {
-    setDiscount(0.10); 
+    if (isDiscountApplied) {
+      // If discount is already applied, remove it
+      setDiscount(0);
+      setIsDiscountApplied(false);
+    } else {
+      // If discount is not applied, apply it
+      setDiscount(0.10); // Apply 10% discount
+      setIsDiscountApplied(true);
+    }
   };
+  
 
   // Generate items for the receipt
   const receiptItems = quantities.flatMap((drink, drinkIndex) =>
