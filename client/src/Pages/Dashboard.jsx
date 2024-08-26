@@ -32,7 +32,7 @@ export default function Dashboard() {
     if (!confirmed) return;
   
     try {
-      await axios.delete(`http://localhost:8800/transaction/${transactionId}/void`);
+      await axios.post(`http://localhost:8800/transaction/${transactionId}/void`);
       // Refresh transactions list
       const response = await axios.get('http://localhost:8800/order-history');
       setTransactions(response.data);

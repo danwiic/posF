@@ -144,6 +144,20 @@ span.dash--sales{
   border-bottom-right-radius: 8px;
 }
 
+.dash--void--transac{
+  all: unset;
+  cursor: pointer;
+  padding: 6px;
+  background-color: grey;
+  border-radius: 4px;
+  color: white;
+  font-weight: 600;
+}
+
+.dash--void--transac:hover{
+  background-color: rgb(87, 86, 86);
+}
+
 
 /* POP UP DASHBOARD */
 

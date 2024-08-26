@@ -729,20 +729,18 @@ app.get('/order-history', (req, res) => {
 });
 
 // Endpoint to void a transaction
-app.delete('/transaction/:transactionId/void', (req, res) => {
+app.post('/transaction/:transactionId/void', async (req, res) => {
   const { transactionId } = req.params;
 
-  // Start a connection and transaction
-  db.beginTransaction(async (err) => {
-    if (err) {
-      console.error('Transaction error:', err);
-      return res.status(500).json({ message: 'Internal server error' });
-    }
+  try {
+    // Begin transaction
+    await new Promise((resolve, reject) => db.beginTransaction(err => err ? reject(err) : resolve()));
 
+    // Fetch order details
     db.query('SELECT * FROM Orders WHERE TransactionID = ?', [transactionId], (err, orderDetails) => {
       if (err) {
         return db.rollback(() => {
-          console.error('Error fetching transaction:', err);
+          console.error('Error fetching order details:', err);
           res.status(500).json({ message: 'Internal server error' });
         });
       }
@@ -753,18 +751,27 @@ app.delete('/transaction/:transactionId/void', (req, res) => {
         });
       }
 
-      // Insert into VoidedOrders
-      db.query(
-        'INSERT INTO VoidedOrders (TransactionID, OrderDate, PaymentMethod, TotalAmount) VALUES (?, ?, ?, ?)',
-        [orderDetails[0].TransactionID, orderDetails[0].OrderDate, orderDetails[0].PaymentMethod, orderDetails[0].TotalAmount],
-        (err) => {
-          if (err) {
-            return db.rollback(() => {
-              console.error('Error inserting into VoidedOrders:', err);
-              res.status(500).json({ message: 'Internal server error' });
-            });
-          }
+      // Fetch order items
+      db.query('SELECT * FROM OrderItems WHERE OrderID = ?', [transactionId], (err, orderItems) => {
+        if (err) {
+          return db.rollback(() => {
+            console.error('Error fetching order items:', err);
+            res.status(500).json({ message: 'Internal server error' });
+          });
+        }
 
+        // Update product quantities
+        const updatePromises = orderItems.map(item => 
+          new Promise((resolve, reject) => 
+            db.query(
+              'UPDATE ProductSizes SET quantity = quantity + ? WHERE productID = ?',
+              [item.Quantity, item.ProductID],
+              err => err ? reject(err) : resolve()
+            )
+          )
+        );
+
+        Promise.all(updatePromises).then(() => {
           // Delete from OrderItems
           db.query('DELETE FROM OrderItems WHERE OrderID = ?', [transactionId], (err) => {
             if (err) {
@@ -783,8 +790,8 @@ app.delete('/transaction/:transactionId/void', (req, res) => {
                 });
               }
 
-              // Commit the transaction
-              db.commit((err) => {
+              // Commit transaction
+              db.commit(err => {
                 if (err) {
                   return db.rollback(() => {
                     console.error('Transaction commit error:', err);
@@ -795,11 +802,26 @@ app.delete('/transaction/:transactionId/void', (req, res) => {
               });
             });
           });
-        }
-      );
+        }).catch(err => {
+          db.rollback(() => {
+            console.error('Error updating product quantities:', err);
+            res.status(500).json({ message: 'Internal server error' });
+          });
+        });
+      });
     });
-  });
+
+  } catch (error) {
+    console.error('Error processing void transaction:', error);
+    try {
+      await new Promise((resolve, reject) => db.rollback(err => err ? reject(err) : resolve()));
+    } catch (rollbackError) {
+      console.error('Error rolling back transaction:', rollbackError);
+    }
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
+
 
 
 
