@@ -3,6 +3,7 @@
   padding: 20px;
   width: 100%;
   position: relative;
+  max-width: calc(100vw - 100px);
 }
 
 .emp-layout {
@@ -13,6 +14,8 @@
 
 .emp--container--con{
   width: 100%;
+  max-width: calc(100vw - 100px);
+  margin-left: 50px;
 }
 
 /* Header */
@@ -22,6 +25,7 @@
 
 /* Table */
 .emp--table {
+  width: 100%;
   max-width:  calc(100% - 100px);
   margin-top: 20px; 
   border-collapse: separate;
