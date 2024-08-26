@@ -515,7 +515,7 @@ app.get('/archive/products', (req, res) => {
 // ARCHIVE PRODUCT
 app.put('/product/:id/archive', async (req, res) => {
   const { id } = req.params;
-  const status = 'archive'; // Set status to 'archived' for archiving
+  const status = 'archive'; 
 
   try {
     await db.query('UPDATE Products SET status = ? WHERE productID = ?', [status, id]);

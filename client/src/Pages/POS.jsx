@@ -4,7 +4,7 @@ import "./styles/POS.css";
 import Receipt from "../components/Receipt/Receipt";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
-ToastContainer
+
 
 export default function POS() {
   const [quantities, setQuantities] = useState([]);
