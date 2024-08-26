@@ -36,7 +36,6 @@ app.get('/token', (req, res) => {
   });
 });
 
-
 // SELECT ALL STAFF
 app.get('/employee', (req, res) => {
   const q = "SELECT * FROM users WHERE status = 'active' AND role = 'staff'"
@@ -54,7 +53,6 @@ app.get('/admins', (req, res) => {
     return res.json(data)
   })
 });
-
 
 // SELECT ALL EMPLOYEES  THAT IS ARCHIVE
 app.get('/archive/staff', (req, res) => {
@@ -74,7 +72,7 @@ app.get('/archive/admin', (req, res) => {
   })
 });
 
-// ARCHIVE ACCOUNT
+// ARCHIVE EMPLOYEE ACCOUNT
 app.put('/employee/:id/status', async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -86,7 +84,7 @@ app.put('/employee/:id/status', async (req, res) => {
   }
 });
 
-//  UNARCHIVE
+//  UNARCHIVE EMPLOYEE ACCOUNT 
 app.put('/employee/:id/unarch', async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
@@ -98,7 +96,7 @@ app.put('/employee/:id/unarch', async (req, res) => {
   }
 });
 
-// DELETE STAFF
+// DELETE STAFF ACCOUNT
 app.delete('/employee/:id', (req, res) => {
   const empId = req.params.id
   const q = "DELETE FROM users WHERE id = ?"
@@ -109,23 +107,12 @@ app.delete('/employee/:id', (req, res) => {
   })
 })
 
-// DELETE ADMIN
+// DELETE ADMIN ACCOUNT
 app.delete('/admins/:id', (req, res) => {
   const adminID = req.params.id
   const q = "DELETE FROM users WHERE id = ?"
 
   db.query(q, [adminID], (err, data) => {
-    if(err) return res.json(err)
-      return res.json("Staff deleted successfully")
-  })
-})
-
-// DELETE STAFF
-app.delete('/employee/:id', (req, res) => {
-  const empId = req.params.id
-  const q = "DELETE FROM users WHERE id = ?"
-
-  db.query(q, [empId], (err, data) => {
     if(err) return res.json(err)
       return res.json("Staff deleted successfully")
   })
@@ -162,12 +149,9 @@ app.post("/register", (req, res) => {
   });
 });
 
-// ======================CREATE ADMIN ACCOUNT=================================>
-
-
+// ======================CREATE NEW ADMIN ACCOUNT=================================>
   app.post("/register/admin", (req, res) => {
     // CHECK IF USER EXIST
- 
     const checkUser = "SELECT * FROM users WHERE username = ?";
   
   db.query(checkUser, [req.body.username], (err, result) => {
@@ -196,14 +180,11 @@ app.post("/register", (req, res) => {
     }
   })
  })
-
 // <=======================================================
 
 
-
-// LOGIN USER
-const JWT_SECRET = 'super_secret_promise'; // Use a strong secret key for JWT
-
+// LOGIN ENDPOINT AND CHECKING ROLES TOO
+const JWT_SECRET = 'super_secret_promise'; 
 app.post('/login', (req, res) => {
   const q = "SELECT * FROM users WHERE username = ?";
 
@@ -214,13 +195,10 @@ app.post('/login', (req, res) => {
       bcrypt.compare(req.body.password.toString(), result[0].password, (err, match) => {
         if (err) return res.json({ Error: "Password comparison error" });
         if (match) {
-          // Generate a JWT token
           const token = jwt.sign(
             { id: result[0].id, role: result[0].role },
-            JWT_SECRET // Token expires in 1 hour
+            JWT_SECRET 
           );
-
-          // Return the user's role and token
           return res.json({
             Status: "Success",
             user: {
@@ -228,7 +206,7 @@ app.post('/login', (req, res) => {
               username: result[0].username,
               role: result[0].role,
             },
-            token // Send the token to the client
+            token 
           });
         } else {
           return res.json({ Status: "Error", Error: "Wrong username or password" });
@@ -240,8 +218,7 @@ app.post('/login', (req, res) => {
   });
 });
 
-// LOGOUT
-
+// LOGOUT -----------------> PRETTY OBVIUS IG 
 app.post("/logout", (req, res) => {
   res.clearCookie("accessToken", {
     secure: true,
@@ -249,8 +226,7 @@ app.post("/logout", (req, res) => {
   }).status(200).json("User has been logout")
 })
 
-// FETCH PRODUCTS
-
+// FETCH PRODUCTS FOR PRODUCT PAGE
 app.get('/products', (req, res) => {
   const query = `
     SELECT p.productID, p.prodName, s.sizeName, ps.sizeID, ps.price, ps.quantity
@@ -269,19 +245,17 @@ app.get('/products', (req, res) => {
   });
 });
 
-
-
 //========================================== ADDING NEW PRODUCTS =====================================================
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage(); // Store files in memory
 const upload = multer({ storage: storage });
 
-
+// INSERT NEW PRODUCT TO DATABASE WITH IMAGE
 app.post('/add-product', upload.single('image'), (req, res) => {
   const { prodName, priceMedio, priceGrande, quantityMedio, quantityGrande, category, newCategory } = req.body;
-  const image = req.file ? req.file.buffer : null; // Image buffer
-  const mimeType = req.file ? req.file.mimetype : null; // MIME type
+  const image = req.file ? req.file.buffer : null; 
+  const mimeType = req.file ? req.file.mimetype : null; 
 
   if (!prodName || !priceMedio || !priceGrande || !quantityMedio || !quantityGrande) {
     return res.status(400).send('Missing required fields');
@@ -301,7 +275,7 @@ app.post('/add-product', upload.single('image'), (req, res) => {
       insertCategoryQuery = 'INSERT INTO drink_categories (name) VALUES (?)';
       categoryValues = [newCategory];
     } else {
-      categoryId = category; // Use the selected category ID
+      categoryId = category; 
       insertCategoryQuery = 'SELECT categoryID FROM drink_categories WHERE categoryID = ?';
       categoryValues = [categoryId];
     }
@@ -401,7 +375,7 @@ app.post('/add-product', upload.single('image'), (req, res) => {
   });
 });
 
-// GET ALL CATEGORIES IN CATEGORY TABLE
+// GET ALL CATEGORIES IN CATEGORY TABLE FOR PRODUCTS DISPLAY IN POS PAGE
 app.get('/categories', (req, res) => {
   const q = 'SELECT categoryID, name FROM drink_categories';
 
@@ -416,11 +390,10 @@ app.get('/categories', (req, res) => {
 
 const toBase64 = (buffer, mimeType) => `data:${mimeType};base64,${buffer.toString('base64')}`;
 
-// Get products with images
+// FETCH ALL PRODUCTS
 app.get('/product', (req, res) => {
   const categoryID = req.query.categoryID || 0;
 
-  // Construct the query conditionally
   let q = `
     SELECT 
       p.productID,
@@ -438,7 +411,7 @@ app.get('/product', (req, res) => {
     WHERE p.categoryID = ? AND status = 'active'`;
 
   if (categoryID === '0') {
-    // Adjust the query if categoryID is 0
+    // IF CATEGORY IS 0 || THE ALL IT WILL SHOW ALL THE PRODUCTS
     q = `
       SELECT 
         p.productID,
@@ -491,6 +464,7 @@ app.get('/product', (req, res) => {
   });
 });
 
+// SELECT ALL PRODUCTS THAT IS ARCHIVE IN PRODUCT.JSX
 app.get('/archive/products', (req, res) => {
   const q = `
     SELECT p.productID, p.prodName, s.sizeName, ps.price, ps.quantity
@@ -509,7 +483,7 @@ app.get('/archive/products', (req, res) => {
   });
 });
 
-// ARCHIVE PRODUCT
+// SET PRODUCTS STATUS TO ARCHIVE
 app.put('/product/:id/archive', async (req, res) => {
   const { id } = req.params;
   const status = 'archive'; 
@@ -981,15 +955,6 @@ app.get('/order-details/:transactionId', (req, res) => {
     res.json(results);
   });
 });
-
-
-
-
-
-
-
-
-
 
 // CHECK IF server is running
 app.listen(8800, () => {
