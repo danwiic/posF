@@ -30,9 +30,7 @@ export default function Products() {
     try {
       const response = await axios.get('http://localhost:8800/products');
       const data = response.data;
-      console.log('Fetched products:', data);
-  
-      // Format data
+      
       const formattedData = data.reduce((acc, item) => {
         let product = acc.find(p => p.id === item.productID);
   
@@ -54,8 +52,6 @@ export default function Products() {
   
         return acc;
       }, []);
-  
-      console.log('Formatted product data:', formattedData);
       setStockData(formattedData);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -180,7 +176,7 @@ export default function Products() {
 
   const handleEditProduct = (product) => {
     setSelectedProduct(product);
-    setShowUpdate(true); // Show the update popup
+    setShowUpdate(true); 
   };
   
   
@@ -188,25 +184,22 @@ export default function Products() {
     const updatedSizes = selectedProduct.sizes.map(size => {
       if (!size.sizeID) {
         console.error('Missing sizeID in one of the sizes');
-        return null; // Skip this size
+        return null; 
       }
       return {
         sizeID: size.sizeID,
         price: parseFloat(size.price),
         quantity: parseInt(size.quantity, 10)
       };
-    }).filter(size => size !== null); // Remove null values
-  
-    console.log('Payload being sent to server:', updatedSizes);
+    }).filter(size => size !== null);
   
     try {
       const response = await axios.put(`http://localhost:8800/product/${selectedProduct.id}`, { sizes: updatedSizes });
-      console.log('API response:', response);
   
       if (response.status === 200) {
         toast.success('Product updated successfully');
-        fetchProducts(); // Refresh the product list
-        setShowPopup(false); // Close popup on success
+        fetchProducts(); 
+        setShowPopup(false); 
       } else {
         toast.error('Unexpected response status');
       }
@@ -238,7 +231,7 @@ export default function Products() {
             <button onClick={handleAddProduct} className='btn--add'>Add New Product</button>
             <button onClick={handleShowArchived} className="btn--archive">VIEW ARCHIVED PRODUCTS</button>
           </div>
-          <div className="table-wrapper">
+          <div className="table--wrapper--prod">
             <table className='prod--table'>
               <thead className='prod--th--head'>
                 <tr className='product--info--table'>
@@ -262,7 +255,7 @@ export default function Products() {
                       )}
                       <td className='product--info--table size'>{size.size}</td>
                       <td className='product--info--table'>₱{size.price}</td>
-                      <td className='product--info--table'>{size.quantity}</td>
+                      <td className='product--info--table'>{size.quantity === 0 ? "Out of stock": size.quantity}</td>
                       {sizeIndex === 0 && (
                         <td className='product--info--table prod--table--operation' rowSpan={product.sizes.length}>
                           <button className='btn--prod--update'
@@ -388,7 +381,7 @@ export default function Products() {
             <div className="popup-content">
               <h2>EDIT PRODUCT</h2>
               {selectedProduct && (
-                <form onSubmit={(e) => { e.preventDefault(); handleUpdateProduct(); }}>
+                <form onSubmit={(e) => { e.preventDefault(); handleUpdateProduct(); setShowUpdate(false) }}>
                   <label>
                     Product Name:
                     <input
@@ -434,7 +427,7 @@ export default function Products() {
                     </div>
                   ))}
 
-                  <button type="submit">Update Product</button>
+                  <button type="submit" >Update Product</button>
                   <button type="button" onClick={() => setShowPopup(false)}>Cancel</button>
                 </form>
               )}

@@ -18,7 +18,7 @@ export default function POS() {
   const [showReceipt, setShowReceipt] = useState(false); 
   
 
-  // Fetch categories
+  // FETCH ALL CATEGORIES
   const fetchCategories = async () => {
     try {
       const res = await axios.get("http://localhost:8800/categories");
@@ -28,29 +28,32 @@ export default function POS() {
     }
   };
 
-  // Fetch all products by default
+  // FETCH ALL PRODUCTS THAT ARE ACTIVE
   const fetchProducts = async (categoryID) => {
     try {
       const res = await axios.get("http://localhost:8800/product", {
         params: { categoryID: categoryID || 0 }
       });
-      console.log('Products fetched:', res.data);
       setProducts(res.data);
       setQuantities(res.data.map(drink => ({
+        productID: drink.productID,
         name: drink.prodName,
+        quantity: drink.quantity,
         sizes: Array.from({ length: drink.sizes.length }, () => 0)
       })));
     } catch (err) {
       console.error('Error fetching products:', err);
     }
   };
+  
+
 
   useEffect(() => {
     fetchCategories();
     fetchProducts(); 
   }, []);
 
-  // Recalculate change whenever quantities, payment, discount, or products change
+  // UPDATE THE CHANGE AND TOTAL VALUE AFTER SELECTING PRODUCTS
   useEffect(() => {
     const total = getTotal();
     const amountPaid = parseFloat(payment);
@@ -59,7 +62,7 @@ export default function POS() {
     } else {
       setChange(0);
     }
-  }, [quantities, payment, discount, products]); // Added products to dependency array
+  }, [quantities, payment, discount, products]); 
 
   const handleQuantityChange = (drinkIndex, sizeIndex, value) => {
     const newQuantities = [...quantities];
@@ -69,7 +72,6 @@ export default function POS() {
       newQuantities[drinkIndex].sizes[sizeIndex] = isNaN(newSizeQuantity) ? 0 : newSizeQuantity;
       setQuantities(newQuantities);
     } else {
-      // If the newSizeQuantity is negative, do nothing (or set it to zero)
       newQuantities[drinkIndex].sizes[sizeIndex] = 0;
       setQuantities(newQuantities);
     }
@@ -102,38 +104,32 @@ export default function POS() {
     return total - (total * discount); 
   };
 
-  const handlePay = (e) => {
-    e.preventDefault(); 
-    if (payment >= getTotal()) {
-      setShowReceipt(true);
-    } else {
-      toast.error("Payment is insufficient!");
-    }
-  };
-
   const handleApplyDiscount = () => {
     if (isDiscountApplied) {
-      // If discount is already applied, remove it
+      // REMOVE DISCOUNT 
       setDiscount(0);
       setIsDiscountApplied(false);
     } else {
-      // If discount is not applied, apply it
-      setDiscount(0.10); // Apply 10% discount
+      // APPLY DISCOUNT
+      setDiscount(0.10); 
       setIsDiscountApplied(true);
     }
   };
   
 
-  // Generate items for the receipt
-  const receiptItems = quantities.flatMap((drink, drinkIndex) =>
-    drink.sizes.map((quantity, sizeIndex) =>
-      quantity > 0 ? {
-        name: `${drink.name} (${products[drinkIndex].sizes[sizeIndex].sizeName})`,
-        price: quantity * products[drinkIndex].sizes[sizeIndex].price,
-        quantity 
-      } : null
-    ).filter(item => item !== null)
-  );
+const receiptItems = quantities.flatMap((drink, drinkIndex) =>
+  drink.sizes.map((quantity, sizeIndex) =>
+    quantity > 0 ? {
+      name: `${drink.name} (${products[drinkIndex].sizes[sizeIndex].sizeName})`,
+      price: quantity * products[drinkIndex].sizes[sizeIndex].price,
+      quantity,
+      productID: products[drinkIndex].productID,
+      sizeName: products[drinkIndex].sizes[sizeIndex].sizeName // Ensure sizeName is included
+    } : null
+  ).filter(item => item !== null)
+);
+
+  
 
   const printReceipt = () => {
     setShowReceipt(false); 
@@ -155,6 +151,85 @@ export default function POS() {
       console.error('Error fetching products for category:', err); 
     }
   };
+ 
+  const handlePay = async (e) => {
+    e.preventDefault();
+    const total = getTotal();
+    if (payment >= total) {
+      try {
+        const paymentData = {
+          paymentMethod: 'cash',
+          items: receiptItems,
+          total: total,
+          paymentAmount: payment,
+          changeAmount: change,
+          discount: discount
+        };
+
+        const response = await axios.post("http://localhost:8800/payment", paymentData);
+
+        // HIDE RECEIPT FOR NOW -------> setShowReceipt(true);
+
+        setQuantities(
+          products.map(drink => ({
+            name: drink.prodName,
+            sizes: Array.from({ length: drink.sizes.length }, () => 0)
+          }))
+        );
+        toast.success("Transaction success")
+        setPayment(0);
+        setChange(0);
+        setDiscount(0); 
+        fetchProducts()
+        // HIDE RECEIPT FOR NOW -------> setShowReceipt(true);
+
+      } catch (err) {
+        toast.error("Error processing payment!");
+        console.error("Payment error:", err);
+      }
+    } else {
+      toast.error("Payment is insufficient!");
+    }
+  };
+
+  const handleGcashPay = async (e) => {
+    e.preventDefault();
+    const total = getTotal();
+    if (payment >= total) {
+      try {
+        const paymentData = {
+          paymentMethod: 'gcash',
+          items: receiptItems,
+          total: total,
+          paymentAmount: payment,
+          changeAmount: change,
+          discount: discount
+        };
+
+        const response = await axios.post("http://localhost:8800/payment", paymentData);
+
+        setQuantities(
+          products.map(drink => ({
+            name: drink.prodName,
+            sizes: Array.from({ length: drink.sizes.length }, () => 0)
+          }))
+        );
+        toast.success("Transaction success")
+        setPayment(0);
+        setChange(0);
+        setDiscount(0); 
+         // HIDE RECEIPT FOR NOW -------> setShowReceipt(true);
+        fetchProducts()
+
+      } catch (err) {
+        toast.error("Error processing payment!");
+        console.error("Payment error:", err);
+      }
+    } else {
+      toast.error("Payment is insufficient!");
+    }
+  };
+  
 
   return (
     <div className="pos--container">
@@ -180,36 +255,54 @@ export default function POS() {
         </div>
 
         <div className="pos-list">
-          {products.length === 0 ? (
-            <p>No products available</p>
-          ) : (
-            products.map((drink, drinkIndex) => (
-              <div key={drinkIndex} className="pos-item">
-                {drink.image && <img src={drink.image} className="pos--prod--image" alt={drink.prodName}/>}
-                <h2>{drink.prodName}</h2>
-                <div className="pos-item-content">
-                  {drink.sizes.map((size, sizeIndex) => (
-                    <div key={sizeIndex} className="size-control-container">
-                      <div className="size-info">
-                        {size.sizeName} - ₱{size.price}
-                      </div>
+        {products.length === 0 ? (
+          <p>No products available</p>
+        ) : (
+          products.map((drink, drinkIndex) => (
+            <div key={drinkIndex} className="pos-item">
+              {drink.image && <img src={drink.image} className="pos--prod--image" alt={drink.prodName} />}
+              <h2>{drink.prodName}</h2>
+              <div className="pos-item-content">
+                {drink.sizes.map((size, sizeIndex) => (
+                  <div key={sizeIndex} className="size-control-container">
+                    <div className="size-info">
+                      {size.sizeName} - ₱{size.price}
+                    </div>
+                    {size.quantity <= 0 ? (
+                      <p className="out-of-stock">Out of Stock</p>
+                    ) : (
                       <div className="quantity-control">
-                        <button style={{height: "22px"}} onClick={() => handleQuantityChange(drinkIndex, sizeIndex, quantities[drinkIndex].sizes[sizeIndex] - 1)}>-</button>
+                        <button
+                          style={{ height: "22px" }}
+                          onClick={() => handleQuantityChange(drinkIndex, sizeIndex, quantities[drinkIndex].sizes[sizeIndex] - 1)}
+                          disabled={quantities[drinkIndex].sizes[sizeIndex] <= 0}
+                        >
+                          -
+                        </button>
                         <input
                           type="text"
                           value={quantities[drinkIndex].sizes[sizeIndex]}
                           onChange={(e) => handleQuantityChange(drinkIndex, sizeIndex, e.target.value)}
                           className="quantity-input"
-                          style={{width: "35px", textAlign: "center", height: "22px"}}
+                          style={{ width: "35px", textAlign: "center", height: "22px" }}
+                          disabled={size.quantity <= 0}
                         />
-                        <button style={{height: "22px"}} onClick={() => handleQuantityChange(drinkIndex, sizeIndex, quantities[drinkIndex].sizes[sizeIndex] + 1)}>+</button>
+                        <button
+                          style={{ height: "22px" }}
+                          onClick={() => handleQuantityChange(drinkIndex, sizeIndex, quantities[drinkIndex].sizes[sizeIndex] + 1)}
+                          disabled={size.quantity <= 0}
+                        >
+                          +
+                        </button>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    )}
+                  </div>
+                ))}
               </div>
-            ))
-          )}
+            </div>
+          ))
+        )}
+
 
           <div className="sticky-summary">
             <h2>Order Summary</h2>
@@ -234,8 +327,8 @@ export default function POS() {
               />
               <h3>Change: ₱{change.toFixed(2)}</h3>
             </div>
-            <button onClick={handlePay} className="pay-btn">Pay</button>
-            <button onClick={handlePay} className="pay-btn">Pay<img src="gcash.svg" style={{width: "25px"}}/></button>
+            <button onClick={handlePay}  className="pay-btn">Pay</button>
+            <button onClick={handleGcashPay} className="pay-btn">Pay<img src="gcash.svg" style={{width: "25px"}}/></button>
           </div>
         </div>
       </Layout>

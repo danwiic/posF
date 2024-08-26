@@ -2,6 +2,7 @@
 .dash--body{
   background: rgb(2,0,36);
   background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(177,231,210,1) 0%, rgba(155,219,99,1) 100%);
+  width: 100%;
 }
 
 .dash--header{
@@ -72,12 +73,13 @@ span.dash--sales{
 
 
 /* ORDER HISTORY TABLE */
+/* ORDER HISTORY TABLE */
 
-.order--history{
+.order--history {
   padding: 20px;
 }
 
-.order--head{
+.order--head {
   margin-top: 20px;
   margin-bottom: 20px;
   background-color: white;
@@ -88,22 +90,34 @@ span.dash--sales{
   box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
 }
 
+.order--container {
+  overflow-x: auto; /* Enable horizontal scrolling */
+  max-height: 325px;
+  border-radius: 8px;
+}
+
+.table-wrapper {
+  max-width: 100%; /* Ensure wrapper does not exceed container width */
+  box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+  margin-bottom: 0;
+  border-radius: 8px;
+}
+
 .order--table {
   width: 100%;
-  border-collapse: separate; /* Change from 'collapse' to 'separate' */
-  border-spacing: 0; /* Remove spacing between cells */
+  border-collapse: separate;
+  border-spacing: 0;
   background: white;
-  border-radius: 8px; /* Apply border-radius to table */
+  border-radius: 8px;
   box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
-  overflow: hidden; /* Ensure rounded corners are visible */
 }
 
 .order--table th, 
 .order--table td {
   padding: 8px;
-  border-radius: 0; /* Reset individual border-radius */
+  border-radius: 0;
   text-align: center;
-  border-bottom: 1px solid  #ced6d0;;
+  border-bottom: 1px solid #ced6d0;
 }
 
 .order--table th {
@@ -115,20 +129,21 @@ span.dash--sales{
 }
 
 .order--table th:first-child {
-  border-top-left-radius: 8px; /* Rounded top-left corner */
+  border-top-left-radius: 8px;
 }
 
 .order--table th:last-child {
-  border-top-right-radius: 8px; /* Rounded top-right corner */
+  border-top-right-radius: 8px;
 }
 
 .order--table tr:last-child td:first-child {
-  border-bottom-left-radius: 8px; /* Rounded bottom-left corner */
+  border-bottom-left-radius: 8px;
 }
 
 .order--table tr:last-child td:last-child {
-  border-bottom-right-radius: 8px; /* Rounded bottom-right corner */
+  border-bottom-right-radius: 8px;
 }
+
 
 /* POP UP DASHBOARD */
 

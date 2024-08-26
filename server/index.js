@@ -264,10 +264,6 @@ app.get('/products', (req, res) => {
       console.error('Database query error:', error);
       return res.status(500).send('Server error');
     }
-
-    // Log raw results
-    console.log('Raw database query results:', results);
-
     res.json(results);
   });
 });
@@ -636,19 +632,179 @@ app.delete('/product/:id/delete', (req, res) => {
   });
 });
 
+// SUBMIT THE TRANSACTION AND UPDATE THE STOCKS IN DATABASE
+app.post('/payment', (req, res) => {
+  const { paymentMethod, items, total, paymentAmount, changeAmount, discount } = req.body;
 
+  if (!paymentMethod || !items || !total || !paymentAmount || !changeAmount) {
+    return res.status(400).json({ message: 'Missing required parameters' });
+  }
 
+  db.beginTransaction(err => {
+    if (err) return res.status(500).json({ message: 'Transaction failed', error: err });
 
+    // Insert order record
+    db.query(
+      `INSERT INTO Orders (OrderDate, PaymentMethod, TotalAmount) 
+       VALUES (NOW(), ?, ?)`,
+      [paymentMethod, total],
+      (err, results) => {
+        if (err) {
+          return db.rollback(() => res.status(500).json({ message: 'Failed to insert order', error: err }));
+        }
 
+        const orderID = results.insertId;
 
+        // Process each item
+        let itemQueries = items.map(item => {
+          return new Promise((resolve, reject) => {
+            console.log(`Inserting OrderItem for OrderID: ${orderID}, ProductID: ${item.productID}, Quantity: ${item.quantity}, Price: ${item.price}`);
 
-// CHECK IF server is running
-app.listen(8800, () => {
-  console.log("Server running")
+            // Insert into order items
+            db.query(
+              `INSERT INTO OrderItems (OrderID, ProductID, Quantity, ItemPrice) 
+               VALUES (?, ?, ?, ?)`,
+              [orderID, item.productID, item.quantity, item.price],
+              err => {
+                if (err) return reject(err);
+
+                console.log(`Updating ProductSizes for ProductID: ${item.productID}, SizeName: ${item.sizeName}, Quantity: ${item.quantity}`);
+
+                // Update product stock
+                db.query(
+                  `UPDATE ProductSizes 
+                   SET quantity = quantity - ? 
+                   WHERE productID = ? 
+                     AND sizeID = (SELECT sizeID FROM Sizes WHERE sizeName = ?)`,
+                  [item.quantity, item.productID, item.sizeName],
+                  err => {
+                    if (err) return reject(err);
+                    resolve();
+                  }
+                );
+              }
+            );
+          });
+        });
+
+        Promise.all(itemQueries)
+          .then(() => {
+            db.commit(err => {
+              if (err) {
+                return db.rollback(() => res.status(500).json({ message: 'Failed to commit transaction', error: err }));
+              }
+              res.status(200).json({ message: 'Payment processed and stock updated successfully' });
+            });
+          })
+          .catch(err => {
+            db.rollback(() => res.status(500).json({ message: 'Failed to process items', error: err }));
+          });
+      }
+    )
+  })
 })
 
 
+// FETCH TRANSACTION HISTORY
+app.get('/order-history', (req, res) => {
+  const query = `
+    SELECT 
+      Orders.TransactionID, 
+      Orders.OrderDate, 
+      Orders.PaymentMethod, 
+      Orders.TotalAmount, 
+      SUM(OrderItems.Quantity) AS TotalQuantity
+    FROM Orders
+    JOIN OrderItems ON Orders.TransactionID = OrderItems.OrderID
+    GROUP BY Orders.TransactionID, Orders.OrderDate, Orders.PaymentMethod, Orders.TotalAmount
+  `;
 
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching order history:', err);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(results);
+  });
+});
+
+// Endpoint to void a transaction
+app.delete('/transaction/:transactionId/void', (req, res) => {
+  const { transactionId } = req.params;
+
+  // Start a connection and transaction
+  db.beginTransaction(async (err) => {
+    if (err) {
+      console.error('Transaction error:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+
+    db.query('SELECT * FROM Orders WHERE TransactionID = ?', [transactionId], (err, orderDetails) => {
+      if (err) {
+        return db.rollback(() => {
+          console.error('Error fetching transaction:', err);
+          res.status(500).json({ message: 'Internal server error' });
+        });
+      }
+
+      if (orderDetails.length === 0) {
+        return db.rollback(() => {
+          res.status(404).json({ message: 'Transaction not found' });
+        });
+      }
+
+      // Insert into VoidedOrders
+      db.query(
+        'INSERT INTO VoidedOrders (TransactionID, OrderDate, PaymentMethod, TotalAmount) VALUES (?, ?, ?, ?)',
+        [orderDetails[0].TransactionID, orderDetails[0].OrderDate, orderDetails[0].PaymentMethod, orderDetails[0].TotalAmount],
+        (err) => {
+          if (err) {
+            return db.rollback(() => {
+              console.error('Error inserting into VoidedOrders:', err);
+              res.status(500).json({ message: 'Internal server error' });
+            });
+          }
+
+          // Delete from OrderItems
+          db.query('DELETE FROM OrderItems WHERE OrderID = ?', [transactionId], (err) => {
+            if (err) {
+              return db.rollback(() => {
+                console.error('Error deleting from OrderItems:', err);
+                res.status(500).json({ message: 'Internal server error' });
+              });
+            }
+
+            // Delete from Orders
+            db.query('DELETE FROM Orders WHERE TransactionID = ?', [transactionId], (err) => {
+              if (err) {
+                return db.rollback(() => {
+                  console.error('Error deleting from Orders:', err);
+                  res.status(500).json({ message: 'Internal server error' });
+                });
+              }
+
+              // Commit the transaction
+              db.commit((err) => {
+                if (err) {
+                  return db.rollback(() => {
+                    console.error('Transaction commit error:', err);
+                    res.status(500).json({ message: 'Internal server error' });
+                  });
+                }
+                res.status(200).json({ message: 'Transaction voided successfully' });
+              });
+            });
+          });
+        }
+      );
+    });
+  });
+});
+
+
+
+
+// =================================== UPDATE PRODUCT QUANTITY / PRICE
 app.put('/product/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -662,7 +818,7 @@ app.put('/product/:id', async (req, res) => {
 
     for (const size of sizes) {
       const { sizeID, price, quantity } = size;
-
+      
       if (!sizeID) {
         console.error('Missing sizeID in request payload');
         continue;
@@ -675,12 +831,12 @@ app.put('/product/:id', async (req, res) => {
         [price, quantity, id, sizeID]
       );
       console.log(`Update result for sizeID ${sizeID}:`, result);
-
+      
       if (result.affectedRows === 0) {
         console.error(`No rows updated for productID ${id} and sizeID ${sizeID}`);
       }
     }
-
+    
     res.json({ message: 'Product updated successfully' });
   } catch (error) {
     console.error('Error updating product:', error);
@@ -688,3 +844,8 @@ app.put('/product/:id', async (req, res) => {
   }
 });
 
+
+// CHECK IF server is running
+app.listen(8800, () => {
+  console.log("Server running")
+})

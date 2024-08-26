@@ -7,7 +7,7 @@
   height: 100vh;
 }
 
-.table-wrapper {
+.table--wrapper--prod {
   max-height: 550px; 
   overflow-y: auto;
   padding-bottom: 10px;
