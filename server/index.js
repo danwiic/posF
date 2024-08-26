@@ -889,20 +889,24 @@ app.put('/product/:id', async (req, res) => {
 
 app.get('/sales', (req, res) => {
   const query = `
-    SELECT 'today' AS period, SUM(TotalAmount) AS total 
+    SELECT 'today' AS period, COALESCE(SUM(TotalAmount), 0) AS total 
     FROM Orders 
     WHERE DATE(OrderDate) = CURDATE()
     UNION ALL
-    SELECT 'thisWeek' AS period, SUM(TotalAmount) AS total 
+    SELECT 'thisWeek' AS period, COALESCE(SUM(TotalAmount), 0) AS total 
     FROM Orders 
     WHERE YEARWEEK(OrderDate, 1) = YEARWEEK(CURDATE(), 1)
     UNION ALL
-    SELECT 'thisMonth' AS period, SUM(TotalAmount) AS total 
+    SELECT 'lastWeek' AS period, COALESCE(SUM(TotalAmount), 0) AS total 
+    FROM Orders 
+    WHERE YEARWEEK(OrderDate, 1) = YEARWEEK(CURDATE() - INTERVAL 1 WEEK, 1)
+    UNION ALL
+    SELECT 'thisMonth' AS period, COALESCE(SUM(TotalAmount), 0) AS total 
     FROM Orders 
     WHERE YEAR(OrderDate) = YEAR(CURDATE()) 
     AND MONTH(OrderDate) = MONTH(CURDATE())
     UNION ALL
-    SELECT 'total' AS period, SUM(TotalAmount) AS total 
+    SELECT 'total' AS period, COALESCE(SUM(TotalAmount), 0) AS total 
     FROM Orders
   `;
 
@@ -912,7 +916,6 @@ app.get('/sales', (req, res) => {
       return res.status(500).json({ message: 'Error fetching sales data', error: err });
     }
 
-    // Transform results into an object
     const sales = results.reduce((acc, row) => {
       acc[row.period] = row.total || 0;
       return acc;
@@ -921,6 +924,9 @@ app.get('/sales', (req, res) => {
     res.json(sales);
   });
 });
+
+
+
 
 app.get('/today', (req, res) => {
   const query = `

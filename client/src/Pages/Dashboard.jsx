@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [salesStats, setSalesStats] = useState({
     today: 0,
     thisWeek: 0,
+    lastWeek: 0,
     thisMonth: 0,
     total: 0
   });
@@ -21,9 +22,10 @@ export default function Dashboard() {
       // Fetch transactions
       const transactionsResponse = await axios.get('http://localhost:8800/order-history');
       setTransactions(transactionsResponse.data);
-
+  
       // Fetch sales statistics
       const statsResponse = await axios.get('http://localhost:8800/sales');
+      console.log('Sales Stats:', statsResponse.data); // Log data to inspect
       setSalesStats(statsResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -31,6 +33,7 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchData();
@@ -103,6 +106,10 @@ export default function Dashboard() {
               <div className="card--total weekly--total">
                 <div className='sales--header'>WEEKLY SALES</div>
                 <span className='dash--sales'>₱{salesStats.thisWeek.toFixed(2)}</span>
+              </div>
+              <div className="card--total weekly--total">
+                <div className='sales--header'>LAST WEEK SALES</div>
+                <span className='dash--sales'>₱{salesStats.lastWeek.toFixed(2)}</span>
               </div>
               <div className="card--total monthly--total">
                 <div className='sales--header'>MONTHLY SALES</div>

@@ -21,6 +21,7 @@
 .cards--container {
   width: 100%;
   padding: 20px;
+  max-width: calc(100vw - 100px);
 }
 
 .cards {
