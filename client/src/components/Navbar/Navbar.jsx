@@ -8,6 +8,9 @@ import { RxHamburgerMenu } from "react-icons/rx";
 import { useState } from 'react';
 import { useUser } from '../../Context/UserContext';
 import axios from 'axios';
+import { IoTodayOutline } from "react-icons/io5";
+
+
 
 export default function Navbar({ children }) {
   const [isOpen, setIsOpen] = useState(() => {
@@ -46,6 +49,7 @@ export default function Navbar({ children }) {
     { path: '/users', name: "Administrator", icon: <IoPeopleOutline /> },
     { path: '#', name: "Logout", icon: <CiLogout />, onClick: handleLogout },
   ] : [
+    { path: '/today', name: "Today's Sale", icon: <IoTodayOutline /> },
     { path: '/pos', name: "POS", icon: <MdSell /> },
     { path: '#', name: "Logout", icon: <CiLogout />, onClick: handleLogout },
   ];

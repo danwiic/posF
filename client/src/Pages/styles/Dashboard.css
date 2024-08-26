@@ -5,6 +5,10 @@
   width: 100%;
 }
 
+.dash--container{
+  width: 100%;
+}
+
 .dash--header{
   display: flex;
   align-items: center;
@@ -73,8 +77,6 @@ span.dash--sales{
 
 
 /* ORDER HISTORY TABLE */
-/* ORDER HISTORY TABLE */
-
 .order--history {
   padding: 20px;
 }
@@ -92,8 +94,9 @@ span.dash--sales{
 
 .order--container {
   overflow-x: auto; /* Enable horizontal scrolling */
-  max-height: 325px;
+  max-height: calc(98vh - 345px);
   border-radius: 8px;
+  
 }
 
 .table-wrapper {
@@ -122,6 +125,7 @@ span.dash--sales{
 
 .order--table th {
   font-size: 14px;
+  padding: 14px;
 }
 
 .order--table td {

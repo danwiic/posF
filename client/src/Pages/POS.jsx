@@ -117,17 +117,17 @@ export default function POS() {
   };
   
 
-const receiptItems = quantities.flatMap((drink, drinkIndex) =>
-  drink.sizes.map((quantity, sizeIndex) =>
-    quantity > 0 ? {
-      name: `${drink.name} (${products[drinkIndex].sizes[sizeIndex].sizeName})`,
-      price: quantity * products[drinkIndex].sizes[sizeIndex].price,
-      quantity,
-      productID: products[drinkIndex].productID,
-      sizeName: products[drinkIndex].sizes[sizeIndex].sizeName // Ensure sizeName is included
-    } : null
-  ).filter(item => item !== null)
-);
+  const receiptItems = quantities.flatMap((drink, drinkIndex) =>
+    drink.sizes.map((quantity, sizeIndex) =>
+      quantity > 0 ? {
+        name: `${drink.name} (${products[drinkIndex].sizes[sizeIndex].sizeName})`,
+        price: quantity * products[drinkIndex].sizes[sizeIndex].price,
+        quantity,
+        productID: products[drinkIndex].productID,
+        sizeID: products[drinkIndex].sizes[sizeIndex].sizeID // Ensure sizeID is included
+      } : null
+    ).filter(item => item !== null)
+  );
 
   
 
@@ -157,7 +157,6 @@ const receiptItems = quantities.flatMap((drink, drinkIndex) =>
     const total = getTotal();
     const paymentAmount = parseFloat(payment);
   
-    // Ensure paymentAmount is a valid number
     if (isNaN(paymentAmount) || paymentAmount < 0) {
       toast.error("Invalid payment amount!");
       return;
@@ -174,13 +173,9 @@ const receiptItems = quantities.flatMap((drink, drinkIndex) =>
           discount: discount
         };
   
-        console.log("Sending payment data:", paymentData); // Debugging line
-  
         const response = await axios.post("http://localhost:8800/payment", paymentData, {
           headers: { 'Content-Type': 'application/json' }
         });
-  
-        console.log("Response from payment API:", response.data); // Debugging line
   
         // Reset order and payment state after successful payment
         setQuantities(
@@ -192,11 +187,11 @@ const receiptItems = quantities.flatMap((drink, drinkIndex) =>
         toast.success("Transaction successful");
         setPayment(0);
         setChange(0);
-        setDiscount(0); 
+        setDiscount(0);
         fetchProducts();
       } catch (err) {
         toast.error("Error processing payment!");
-        console.error("Payment error:", err.response ? err.response.data : err.message); // Enhanced error logging
+        console.error("Payment error:", err.response ? err.response.data : err.message);
       }
     } else {
       toast.error("Insufficient payment amount!");
@@ -208,7 +203,6 @@ const receiptItems = quantities.flatMap((drink, drinkIndex) =>
     const total = getTotal();
     const paymentAmount = parseFloat(payment);
   
-    // Ensure paymentAmount is a valid number
     if (isNaN(paymentAmount) || paymentAmount < 0) {
       toast.error("Invalid payment amount!");
       return;
@@ -225,13 +219,9 @@ const receiptItems = quantities.flatMap((drink, drinkIndex) =>
           discount: discount
         };
   
-        console.log("Sending payment data:", paymentData); // Debugging line
-  
         const response = await axios.post("http://localhost:8800/payment", paymentData, {
           headers: { 'Content-Type': 'application/json' }
         });
-  
-        console.log("Response from payment API:", response.data); // Debugging line
   
         // Reset order and payment state after successful payment
         setQuantities(
@@ -243,16 +233,17 @@ const receiptItems = quantities.flatMap((drink, drinkIndex) =>
         toast.success("Transaction successful");
         setPayment(0);
         setChange(0);
-        setDiscount(0); 
+        setDiscount(0);
         fetchProducts();
       } catch (err) {
         toast.error("Error processing payment!");
-        console.error("Payment error:", err.response ? err.response.data : err.message); // Enhanced error logging
+        console.error("Payment error:", err.response ? err.response.data : err.message);
       }
     } else {
       toast.error("Insufficient payment amount!");
     }
   };
+  
   
   
 

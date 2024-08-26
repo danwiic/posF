@@ -1,0 +1,26 @@
+.today--container{
+  background: rgb(2,0,36);
+  background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(231,173,140,1) 0%, rgba(137,214,227,1) 100%); 
+}
+
+.order--today {
+  height: 100vh;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  width: 80vw;
+  margin-left: 20px;
+}
+
+.table-wrapper--today {
+  max-width: 100%; /* Ensure wrapper does not exceed container width */
+  box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+  margin-bottom: 0;
+  border-radius: 8px;
+  max-height: calc(100vh - 10px);
+  max-height: calc(100vh - 10px);
+}
+
+.order--container--today {
+  overflow-x: auto; /* Enable horizontal scrolling */
+  max-height: calc(100vh - 130px);
+  border-radius: 8px;
+}

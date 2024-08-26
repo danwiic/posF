@@ -114,6 +114,7 @@ export default function Employee() {
     <div className="emp-layout">
       <ToastContainer />
       <Layout>
+        <div className="emp--container--con">
         <div className="emp--container">
 
           {/* EMP POPUP */}
@@ -155,6 +156,7 @@ export default function Employee() {
               </form>
             </div>
           </Popup>
+          </div>
           {/* END EMP POPUP */}
 
           {/* ARCHIVED STAFF POPUP */}

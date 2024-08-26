@@ -671,25 +671,21 @@ app.post('/payment', (req, res) => {
         // Process each item
         let itemQueries = items.map(item => {
           return new Promise((resolve, reject) => {
-            console.log(`Inserting OrderItem for OrderID: ${orderID}, ProductID: ${item.productID}, Quantity: ${item.quantity}, Price: ${item.price}`);
-
             // Insert into order items
             db.query(
-              `INSERT INTO OrderItems (OrderID, ProductID, Quantity, ItemPrice) 
-               VALUES (?, ?, ?, ?)`,
-              [orderID, item.productID, item.quantity, item.price],
+              `INSERT INTO OrderItems (TransactionID, ProductID, Quantity, ItemPrice, SizeID) 
+               VALUES (?, ?, ?, ?, ?)`,
+              [orderID, item.productID, item.quantity, item.price, item.sizeID],
               err => {
                 if (err) return reject(err);
-
-                console.log(`Updating ProductSizes for ProductID: ${item.productID}, SizeName: ${item.sizeName}, Quantity: ${item.quantity}`);
 
                 // Update product stock
                 db.query(
                   `UPDATE ProductSizes 
                    SET quantity = quantity - ? 
                    WHERE productID = ? 
-                     AND sizeID = (SELECT sizeID FROM Sizes WHERE sizeName = ?)`,
-                  [item.quantity, item.productID, item.sizeName],
+                     AND sizeID = ?`,
+                  [item.quantity, item.productID, item.sizeID],
                   err => {
                     if (err) return reject(err);
                     resolve();
@@ -721,6 +717,8 @@ app.post('/payment', (req, res) => {
 });
 
 
+
+
 app.get('/order-history', (req, res) => {
   const query = `
     SELECT 
@@ -730,7 +728,7 @@ app.get('/order-history', (req, res) => {
       Orders.TotalAmount, 
       SUM(OrderItems.Quantity) AS TotalQuantity
     FROM Orders
-    JOIN OrderItems ON Orders.TransactionID = OrderItems.OrderID
+    JOIN OrderItems ON Orders.TransactionID = OrderItems.TransactionID
     GROUP BY Orders.TransactionID, Orders.OrderDate, Orders.PaymentMethod, Orders.TotalAmount
   `;
 
@@ -779,7 +777,7 @@ app.post('/transaction/:transactionId/void', async (req, res) => {
       }
 
       // Fetch order items
-      db.query('SELECT * FROM OrderItems WHERE OrderID = ?', [transactionId], (err, orderItems) => {
+      db.query('SELECT * FROM OrderItems WHERE TransactionID = ?', [transactionId], (err, orderItems) => {
         if (err) {
           return db.rollback(() => {
             console.error('Error fetching order items:', err);
@@ -800,7 +798,7 @@ app.post('/transaction/:transactionId/void', async (req, res) => {
 
         Promise.all(updatePromises).then(() => {
           // Delete from OrderItems
-          db.query('DELETE FROM OrderItems WHERE OrderID = ?', [transactionId], (err) => {
+          db.query('DELETE FROM OrderItems WHERE TransactionID = ?', [transactionId], (err) => {
             if (err) {
               return db.rollback(() => {
                 console.error('Error deleting from OrderItems:', err);
@@ -888,6 +886,103 @@ app.put('/product/:id', async (req, res) => {
     res.status(500).json({ error: 'Error updating product' });
   }
 });
+
+app.get('/sales', (req, res) => {
+  const query = `
+    SELECT 'today' AS period, SUM(TotalAmount) AS total 
+    FROM Orders 
+    WHERE DATE(OrderDate) = CURDATE()
+    UNION ALL
+    SELECT 'thisWeek' AS period, SUM(TotalAmount) AS total 
+    FROM Orders 
+    WHERE YEARWEEK(OrderDate, 1) = YEARWEEK(CURDATE(), 1)
+    UNION ALL
+    SELECT 'thisMonth' AS period, SUM(TotalAmount) AS total 
+    FROM Orders 
+    WHERE YEAR(OrderDate) = YEAR(CURDATE()) 
+    AND MONTH(OrderDate) = MONTH(CURDATE())
+    UNION ALL
+    SELECT 'total' AS period, SUM(TotalAmount) AS total 
+    FROM Orders
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching sales data:', err);
+      return res.status(500).json({ message: 'Error fetching sales data', error: err });
+    }
+
+    // Transform results into an object
+    const sales = results.reduce((acc, row) => {
+      acc[row.period] = row.total || 0;
+      return acc;
+    }, {});
+
+    res.json(sales);
+  });
+});
+
+app.get('/today', (req, res) => {
+  const query = `
+    SELECT o.TransactionID, 
+           DATE_FORMAT(o.OrderDate, '%Y-%m-%d %r') AS OrderDateTime, 
+           o.PaymentMethod, 
+           o.TotalAmount, 
+           SUM(oi.Quantity) AS TotalQuantity
+    FROM Orders o
+    JOIN OrderItems oi ON o.TransactionID = oi.TransactionID
+    WHERE DATE(o.OrderDate) = CURDATE()
+    GROUP BY o.TransactionID, o.OrderDate, o.PaymentMethod, o.TotalAmount
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error executing query:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+// Endpoint to get order details by transactionId
+app.get('/order-details/:transactionId', (req, res) => {
+  const transactionId = req.params.transactionId;
+
+  const query = `
+    SELECT 
+      oi.ProductID, 
+      p.prodName, 
+      s.sizeName, 
+      oi.Quantity, 
+      oi.ItemPrice
+    FROM 
+      OrderItems oi
+    JOIN 
+      Products p ON oi.ProductID = p.productID
+    JOIN 
+      Sizes s ON oi.SizeID = s.sizeID
+    WHERE 
+      oi.TransactionID = ?
+  `;
+
+  db.query(query, [transactionId], (err, results) => {
+    if (err) {
+      console.error('Error fetching order details:', err);
+      res.status(500).send('Server error');
+      return;
+    }
+    res.json(results);
+  });
+});
+
+
+
+
+
+
+
+
 
 
 // CHECK IF server is running

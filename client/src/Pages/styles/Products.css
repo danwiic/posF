@@ -11,6 +11,8 @@
   max-height: 550px; 
   overflow-y: auto;
   padding-bottom: 10px;
+  max-height: calc(100vh - 150px);
+  max-width: calc(100vw - 100px);
 }
 
 .prod--table {
