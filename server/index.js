@@ -5,6 +5,7 @@ import { db } from './connection.js';
 import bcrypt from "bcrypt"
 import jwt from 'jsonwebtoken'
 import multer from 'multer';
+import moment from 'moment/moment.js';
 
 const app = express()
 
@@ -634,10 +635,22 @@ app.delete('/product/:id/delete', (req, res) => {
 
 // SUBMIT THE TRANSACTION AND UPDATE THE STOCKS IN DATABASE
 app.post('/payment', (req, res) => {
-  const { paymentMethod, items, total, paymentAmount, changeAmount, discount } = req.body;
+  const { paymentMethod, items, total, paymentAmount, discount } = req.body;
 
-  if (!paymentMethod || !items || !total || !paymentAmount || !changeAmount) {
-    return res.status(400).json({ message: 'Missing required parameters' });
+  // Convert paymentAmount and total to numbers
+  const paymentAmountNum = Number(paymentAmount);
+  const totalNum = Number(total);
+
+  if (!paymentMethod || !items || !total || isNaN(paymentAmountNum) || isNaN(totalNum)) {
+    return res.status(400).json({ message: 'Missing or invalid parameters' });
+  }
+
+  // Calculate changeAmount
+  const changeAmount = paymentAmountNum - totalNum;
+
+  // Check if paymentAmount is valid
+  if (paymentAmountNum < totalNum) {
+    return res.status(400).json({ message: 'Payment amount must be equal to or greater than the total amount' });
   }
 
   db.beginTransaction(err => {
@@ -647,7 +660,7 @@ app.post('/payment', (req, res) => {
     db.query(
       `INSERT INTO Orders (OrderDate, PaymentMethod, TotalAmount) 
        VALUES (NOW(), ?, ?)`,
-      [paymentMethod, total],
+      [paymentMethod, totalNum],
       (err, results) => {
         if (err) {
           return db.rollback(() => res.status(500).json({ message: 'Failed to insert order', error: err }));
@@ -693,19 +706,21 @@ app.post('/payment', (req, res) => {
               if (err) {
                 return db.rollback(() => res.status(500).json({ message: 'Failed to commit transaction', error: err }));
               }
-              res.status(200).json({ message: 'Payment processed and stock updated successfully' });
+              res.status(200).json({ 
+                message: 'Payment processed and stock updated successfully',
+                changeAmount // Include calculated changeAmount in response
+              });
             });
           })
           .catch(err => {
             db.rollback(() => res.status(500).json({ message: 'Failed to process items', error: err }));
           });
       }
-    )
-  })
-})
+    );
+  });
+});
 
 
-// FETCH TRANSACTION HISTORY
 app.get('/order-history', (req, res) => {
   const query = `
     SELECT 
@@ -724,9 +739,21 @@ app.get('/order-history', (req, res) => {
       console.error('Error fetching order history:', err);
       return res.status(500).json({ error: err.message });
     }
-    res.json(results);
+
+    // Format date and time with moment
+    const formattedResults = results.map(record => {
+      const formattedDate = moment(record.OrderDate).format('YYYY-MM-DD hh:mm:ss A');
+      return {
+        ...record,
+        OrderDate: formattedDate
+      };
+    });
+
+    res.json(formattedResults);
   });
 });
+
+
 
 // Endpoint to void a transaction
 app.post('/transaction/:transactionId/void', async (req, res) => {
@@ -821,10 +848,6 @@ app.post('/transaction/:transactionId/void', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-
-
-
-
 
 // =================================== UPDATE PRODUCT QUANTITY / PRICE
 app.put('/product/:id', async (req, res) => {

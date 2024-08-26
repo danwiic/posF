@@ -155,80 +155,105 @@ const receiptItems = quantities.flatMap((drink, drinkIndex) =>
   const handlePay = async (e) => {
     e.preventDefault();
     const total = getTotal();
-    if (payment >= total) {
+    const paymentAmount = parseFloat(payment);
+  
+    // Ensure paymentAmount is a valid number
+    if (isNaN(paymentAmount) || paymentAmount < 0) {
+      toast.error("Invalid payment amount!");
+      return;
+    }
+  
+    if (paymentAmount >= total) {
       try {
         const paymentData = {
           paymentMethod: 'cash',
           items: receiptItems,
           total: total,
-          paymentAmount: payment,
-          changeAmount: change,
+          paymentAmount: paymentAmount,
+          changeAmount: paymentAmount - total,
           discount: discount
         };
-
-        const response = await axios.post("http://localhost:8800/payment", paymentData);
-
-        // HIDE RECEIPT FOR NOW -------> setShowReceipt(true);
-
+  
+        console.log("Sending payment data:", paymentData); // Debugging line
+  
+        const response = await axios.post("http://localhost:8800/payment", paymentData, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+  
+        console.log("Response from payment API:", response.data); // Debugging line
+  
+        // Reset order and payment state after successful payment
         setQuantities(
           products.map(drink => ({
             name: drink.prodName,
             sizes: Array.from({ length: drink.sizes.length }, () => 0)
           }))
         );
-        toast.success("Transaction success")
+        toast.success("Transaction successful");
         setPayment(0);
         setChange(0);
         setDiscount(0); 
-        fetchProducts()
-        // HIDE RECEIPT FOR NOW -------> setShowReceipt(true);
-
+        fetchProducts();
       } catch (err) {
         toast.error("Error processing payment!");
-        console.error("Payment error:", err);
+        console.error("Payment error:", err.response ? err.response.data : err.message); // Enhanced error logging
       }
     } else {
-      toast.error("Payment is insufficient!");
+      toast.error("Insufficient payment amount!");
     }
   };
-
+  
   const handleGcashPay = async (e) => {
     e.preventDefault();
     const total = getTotal();
-    if (payment >= total) {
+    const paymentAmount = parseFloat(payment);
+  
+    // Ensure paymentAmount is a valid number
+    if (isNaN(paymentAmount) || paymentAmount < 0) {
+      toast.error("Invalid payment amount!");
+      return;
+    }
+  
+    if (paymentAmount >= total) {
       try {
         const paymentData = {
           paymentMethod: 'gcash',
           items: receiptItems,
           total: total,
-          paymentAmount: payment,
-          changeAmount: change,
+          paymentAmount: paymentAmount,
+          changeAmount: paymentAmount - total,
           discount: discount
         };
-
-        const response = await axios.post("http://localhost:8800/payment", paymentData);
-
+  
+        console.log("Sending payment data:", paymentData); // Debugging line
+  
+        const response = await axios.post("http://localhost:8800/payment", paymentData, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+  
+        console.log("Response from payment API:", response.data); // Debugging line
+  
+        // Reset order and payment state after successful payment
         setQuantities(
           products.map(drink => ({
             name: drink.prodName,
             sizes: Array.from({ length: drink.sizes.length }, () => 0)
           }))
         );
-        toast.success("Transaction success")
+        toast.success("Transaction successful");
         setPayment(0);
         setChange(0);
         setDiscount(0); 
-         // HIDE RECEIPT FOR NOW -------> setShowReceipt(true);
-        fetchProducts()
-
+        fetchProducts();
       } catch (err) {
         toast.error("Error processing payment!");
-        console.error("Payment error:", err);
+        console.error("Payment error:", err.response ? err.response.data : err.message); // Enhanced error logging
       }
     } else {
-      toast.error("Payment is insufficient!");
+      toast.error("Insufficient payment amount!");
     }
   };
+  
   
 
   return (
