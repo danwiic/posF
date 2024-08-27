@@ -30,7 +30,7 @@ export default function Login() {
         setError(response.data.Error || 'Login failed');
       }
     } catch (error) {
-      setError('Login failed');
+      setError(error);
     }
   };
 
@@ -64,7 +64,7 @@ export default function Login() {
             />
           </div>
           <button className='btn-Login'>Login</button>
-          <Link to="#"><p className='forgot--password'>Forgot password?</p></Link>
+          <Link to="/reset"><p className='forgot--password'>Forgot password?</p></Link>
           {error && <p style={{ color: 'red', textAlign: "center", marginTop: "10px" }}>{error}</p>}
         </form>
       </div>

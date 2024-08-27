@@ -11,20 +11,20 @@ export default function Users() {
   const [open, setOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false); // State for archive popup
 
-  const [archEmp, setArcEmp] = useState([]);
-  const [employee, setEmployee] = useState([]);
-  const [emp, setEmp] = useState({
+  const [archAdmin, setArchAdmin] = useState([]);
+  const [admins, setAdmins] = useState([]);
+  const [admin, setAdmin] = useState({
       username: '',
       password: '',
-      role: '',
-      forgotKey: ''
+      securityQuestion: '',
+      securityAnswer: ''
   });
 
   // Move fetchStaff function outside useEffect
   const fetchStaff = async () => {
     try {
       const res = await axios.get("http://localhost:8800/admins");
-      setEmployee(res.data); 
+      setAdmins(res.data); 
     } catch (err) {
       console.log("Error:", err);
     }
@@ -37,7 +37,7 @@ export default function Users() {
   const fetchArch = async () => {
     try {
       const res = await axios.get("http://localhost:8800/archive/admin");
-      setArcEmp(res.data); 
+      setArchAdmin(res.data); 
     } catch (err) {
       console.log("Error:", err);
     }
@@ -49,7 +49,7 @@ export default function Users() {
 
   const handleChange = (e) => {
     e.preventDefault();
-    setEmp(prev => ({...prev, [e.target.name]: e.target.value}));
+    setAdmin(prev => ({...prev, [e.target.name]: e.target.value}));
   };
 
   const notifySuccess = () => toast.success("Account added successfully");
@@ -57,26 +57,30 @@ export default function Users() {
   const handleClick = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:8800/register/admin", { ...emp, role: "admin" })
+      await axios.post("http://localhost:8800/register/admin", { ...admin, role: "admin" })
       notifySuccess();
-      setEmp({
+      setAdmin({
         username: '',
         password: '',
-        role: '',
-        forgotKey: ''
+        securityQuestion: '',
+        securityAnswer: ''
       });
       setOpen(false); // Close popup after successful addition
       fetchStaff(); // Fetch the updated employee list
     } catch (err) {
-      console.log(err);
-      toast.error('Failed to add employee');
+      if (err.response && err.response.status === 409) {
+        toast.error('Account already exists');
+      } else {
+        console.error(err);
+        toast.error('Failed to add employee: ' + err.message);
+      }
     }
   };
 
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:8800/employee/${id}`);
-      setEmployee(employee.filter(emp => emp.id !== id));
+      setAdmins(admins.filter(emp => emp.id !== id));
       toast.success("Account deleted successfully");
       fetchStaff(); 
       fetchArch(); 
@@ -126,7 +130,7 @@ export default function Users() {
                 <input
                   id="username"
                   name="username"
-                  value={emp.username}
+                  value={admin.username}
                   type="text"
                   className="emp--input"
                   required
@@ -136,31 +140,39 @@ export default function Users() {
                 <input
                   id="password"
                   name="password"
-                  value={emp.password}
+                  value={admin.password}
                   type="password"
                   className="emp--input"
                   required
                   placeholder="Input password..."
                   onChange={handleChange}
                 />
-                <input
-                  id="role"
-                  name="role"
-                  type="text"
-                  value="admin"
-                  className="emp--input"
-                  readOnly
-                />
-                 <input
-                  id="forgotKey"
-                  name="forgotKey"
-                  value={emp.forgotKey}
-                  type="text"
-                  className="emp--input"
-                  required
-                  placeholder="Input key..."
-                  onChange={handleChange}
-                />
+                  <select
+                    id="securityQuestion"
+                    name="securityQuestion"
+                    className="emp--input"
+                    required
+                    onChange={handleChange}
+                    value={admin.securityQuestion}
+                  >
+                      <option value="">Select a security question...</option>
+                      <option value="What is your mother's maiden name?">What is your mother&apos;s maiden name?</option>
+                      <option value="What was the name of your first pet?">What was the name of your first pet?</option>
+                      <option value="What was the name of your elementary school?">What was the name of your elementary school?</option>
+                      <option value="What is your favorite game?">What is your favorite game?</option>
+                      <option value="What is your favorite food?">What is your favorite food?</option>
+                  </select>
+
+                  <input
+                    id="securityAnswer"
+                    name="securityAnswer"
+                    type="text"
+                    className="emp--input"
+                    required
+                    placeholder="Input answer..."
+                    onChange={handleChange}
+                    value={admin.securityAnswer}
+                  />
                 <button className="btn--emp--add" onClick={handleClick}>ADD</button>
               </form>
             </div>
@@ -181,7 +193,7 @@ export default function Users() {
                   </tr>
                 </thead>
                 <tbody>
-                  {archEmp.map(arch => (
+                  {archAdmin.map(arch => (
                     <tr key={arch.id}>
                       <td>{arch.id}</td>
                       <td>{arch.username}</td>
@@ -219,7 +231,7 @@ export default function Users() {
               </tr>
             </thead>
             <tbody>
-              {employee.map(emp => (
+              {admins.map(emp => (
                 <tr key={emp.id}>
                   <td>{emp.id}</td>
                   <td>{emp.username}</td>

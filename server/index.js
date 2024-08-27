@@ -120,66 +120,107 @@ app.delete('/admins/:id', (req, res) => {
 
 // CREATE DEFAULT EMPLOYEE
 app.post("/register", (req, res) => {
-          // CHECK IF USER EXISTS
   const checkUser = "SELECT * FROM users WHERE username = ?";
   
   db.query(checkUser, [req.body.username], (err, result) => {
-    if (err) return res.json({ Error: "Error in query" });
-    
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ error: "Error in query" });
+    }
+
     if (result.length > 0) {
-      return res.json({ Status: "Error", Error: "User already exists" });
-    } else {
-      const q = "INSERT INTO users (username, password, forgot_pass_key) VALUES (?)";
+      return res.status(409).json({ status: "Error", error: "User already exists" });
+    } 
 
-      bcrypt.hash(req.body.password.toString(), 10, (err, hash) => {
-        if (err) return res.json({ Error: "Error in hashing password" });
-        
-        const values = [
-          req.body.username,
-          hash,
-          req.body.forgotKey
-        ];
+    const userQuery = "INSERT INTO users (username, password) VALUES (?)";
+    bcrypt.hash(req.body.password.toString(), 10, (err, hash) => {
+      if (err) {
+        console.error("Hashing error:", err);
+        return res.status(500).json({ error: "Error in hashing password" });
+      }
 
-        db.query(q, [values], (err, result) => {
-          if (err) return res.json({ Error: "Error in query" });
-          return res.json({ Status: 'Success' });
+      const userValues = [req.body.username, hash];
+
+      db.query(userQuery, [userValues], (err, result) => {
+        if (err) {
+          console.error("Database query error:", err);
+          return res.status(500).json({ error: "Error in query" });
+        }
+
+        const userId = result.insertId;
+        const securityQuestionQuery = "INSERT INTO security_questions (user_id, question, answer) VALUES (?)";
+
+        const securityQuestionValues = [userId, req.body.securityQuestion, req.body.securityAnswer];
+
+        db.query(securityQuestionQuery, [securityQuestionValues], (err, result) => {
+          if (err) {
+            console.error("Database query error:", err);
+            return res.status(500).json({ error: "Error in query" });
+          }
+
+          return res.status(200).json({ status: 'Success' });
         });
       });
-    }
+    });
   });
 });
 
 // ======================CREATE NEW ADMIN ACCOUNT=================================>
-  app.post("/register/admin", (req, res) => {
-    // CHECK IF USER EXIST
+app.post("/register/admin", (req, res) => {
     const checkUser = "SELECT * FROM users WHERE username = ?";
-  
-  db.query(checkUser, [req.body.username], (err, result) => {
-    if (err) return res.json({ Error: "Error in query" });
     
-    if (result.length > 0) {
-      return res.json({ Status: "Error", Error: "User already exists" });
-    } else {
-      const q = "INSERT INTO users (username, password, role, forgot_pass_key) VALUES (?)";
-
+    db.query(checkUser, [req.body.username], (err, result) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({ error: "Error in query" });
+      }
+  
+      if (result.length > 0) {
+        return res.status(409).json({ status: "Error", error: "User already exists" });
+      }
+  
+      const userQuery = "INSERT INTO users (username, password, role) VALUES (?)";
+  
       bcrypt.hash(req.body.password.toString(), 10, (err, hash) => {
-        if (err) return res.json({ Error: "Error in hashing password" });
-        
-        const values = [
+        if (err) {
+          console.error("Hashing error:", err);
+          return res.status(500).json({ error: "Error in hashing password" });
+        }
+  
+        const userValues = [
           req.body.username,
           hash,
-          req.body.role,
-          req.body.forgotKey
+          'admin'
         ];
-
-        db.query(q, [values], (err, result) => {
-          if (err) return res.json({ Error: "Error in query" });
-          return res.json({ Status: 'Success' });
-        })
-      })
-    }
-  })
- })
+  
+        db.query(userQuery, [userValues], (err, result) => {
+          if (err) {
+            console.error("Database query error:", err);
+            return res.status(500).json({ error: "Error in query" });
+          }
+  
+          const userId = result.insertId;
+  
+          const securityQuestionQuery = "INSERT INTO security_questions (user_id, question, answer) VALUES (?)";
+  
+          const securityQuestionValues = [
+            userId,
+            req.body.securityQuestion,
+            req.body.securityAnswer
+          ];
+  
+          db.query(securityQuestionQuery, [securityQuestionValues], (err, result) => {
+            if (err) {
+              console.error("Database query error:", err);
+              return res.status(500).json({ error: "Error in query" });
+            }
+  
+            return res.status(200).json({ status: 'Success' });
+          });
+        });
+      });
+    });
+});
 // <=======================================================
 
 
@@ -899,9 +940,6 @@ app.get('/sales', (req, res) => {
   });
 });
 
-
-
-
 app.get('/today', (req, res) => {
   const query = `
     SELECT o.TransactionID, 
@@ -955,6 +993,139 @@ app.get('/order-details/:transactionId', (req, res) => {
     res.json(results);
   });
 });
+
+// Endpoint to get security question based on username
+app.post("/forgot-password", (req, res) => {
+  const checkUser = "SELECT * FROM users WHERE username = ?";
+
+  db.query(checkUser, [req.body.username], (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ error: "Error in query" });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = result[0].id;
+    const getSecurityQuestion = "SELECT question FROM security_questions WHERE user_id = ?";
+
+    db.query(getSecurityQuestion, [userId], (err, result) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({ error: "Error in query" });
+      }
+
+      if (result.length === 0) {
+        return res.status(404).json({ error: "Security question not found" });
+      }
+
+      return res.status(200).json({ question: result[0].question });
+    });
+  });
+});
+
+
+// Server-side endpoint to verify security answer
+app.post("/verify-answer", (req, res) => {
+  const { username, answer } = req.body;
+
+  const getUserIdQuery = "SELECT id FROM users WHERE username = ?";
+  db.query(getUserIdQuery, [username], (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ error: "Error in query" });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = result[0].id;
+
+    const getSecurityAnswerQuery = "SELECT answer FROM security_questions WHERE user_id = ?";
+    db.query(getSecurityAnswerQuery, [userId], (err, result) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({ error: "Error in query" });
+      }
+
+      if (result.length === 0) {
+        return res.status(404).json({ error: "Security question not found" });
+      }
+
+      const storedAnswer = result[0].answer;
+
+      if (answer === storedAnswer) {
+        return res.status(200).json({ status: "Success" });
+      } else {
+        return res.status(401).json({ error: "Incorrect security answer" });
+      }
+    });
+  });
+});
+
+
+app.post("/reset-password", (req, res) => {
+  const { username, securityAnswer, newPassword } = req.body;
+
+  const checkUser = "SELECT * FROM users WHERE username = ?";
+  
+  db.query(checkUser, [username], (err, result) => {
+    if (err) {
+      console.error("Database query error:", err);
+      return res.status(500).json({ error: "Error in query" });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userId = result[0].id;
+    const getSecurityAnswer = "SELECT answer FROM security_questions WHERE user_id = ?";
+
+    db.query(getSecurityAnswer, [userId], (err, result) => {
+      if (err) {
+        console.error("Database query error:", err);
+        return res.status(500).json({ error: "Error in query" });
+      }
+
+      if (result.length === 0) {
+        return res.status(404).json({ error: "Security answer not found" });
+      }
+
+      const storedAnswer = result[0].answer;
+
+      if (securityAnswer !== storedAnswer) {
+        return res.status(400).json({ error: "Security answer is incorrect" });
+      }
+
+      // Hash the new password and update it in the database
+      bcrypt.hash(newPassword, 10, (err, hashedPassword) => {
+        if (err) {
+          console.error("Error hashing new password:", err);
+          return res.status(500).json({ error: "Error in hashing new password" });
+        }
+
+        const updatePassword = "UPDATE users SET password = ? WHERE username = ?";
+        
+        db.query(updatePassword, [hashedPassword, username], (err, result) => {
+          if (err) {
+            console.error("Database query error:", err);
+            return res.status(500).json({ error: "Error in updating password" });
+          }
+
+          return res.status(200).json({ status: 'Password reset successfully' });
+        });
+      });
+    });
+  });
+});
+
+
+
+
 
 // CHECK IF server is running
 app.listen(8800, () => {

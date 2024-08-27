@@ -1,0 +1,91 @@
+/* ForgotPass.css */
+* {
+  box-sizing: border-box;
+}
+
+.forgot-pass-container {
+  display: flex;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  background-size: cover;
+  background-position: center;
+  background-image: url('backg.jpg'); /* Add your background image */
+}
+
+.forgot-pass-form, .security-question-form, .password-reset-form {
+  width: 400px;
+  background: transparent;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, .49);
+  backdrop-filter: blur(16px);
+  padding: 30px 40px;
+  box-shadow: 2px 2px 16px gray;
+}
+
+.forgot-pass-form h3, .security-question-form h3, .password-reset-form h3 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #fff;
+}
+
+p.question{
+  color: white;
+  margin-bottom: 10px;
+}
+
+input.fp--input[type="text"], input.fp--input[type="password"] {
+  width: 100%;
+  height: 45px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.49);
+  border-radius: 40px;
+  font-size: 16px;
+  color: #fff;
+  padding: 20px 45px 20px 20px;
+  font-weight: 600;
+  margin-bottom: 30px; /* Adjust spacing as needed */
+}
+
+input[type="text"]::placeholder, input[type="password"]::placeholder {
+  color: #fff;
+  font-weight: 800;
+}
+
+.btn--forgot {
+  width: 100%;
+  height: 40px;
+  background: #b04d1c;
+  border: none;
+  outline: none;
+  border-radius: 40px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.btn--forgot:disabled {
+  background: #b0bec5;
+  cursor: not-allowed;
+}
+
+.btn--forgot:hover:not(:disabled) {
+  box-shadow: 0 0 4px #b04d1c;
+  background: #924017;
+  font-weight: 600;
+}
+
+a.link-to-login {
+  text-decoration: none;
+  color: white;
+  text-align: center;
+  display: block;
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+a.link-to-login:hover {
+  text-decoration: underline;
+}

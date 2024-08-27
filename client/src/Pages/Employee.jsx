@@ -16,7 +16,7 @@ export default function Employee() {
   const [emp, setEmp] = useState({
     username: "",
     password: "",
-    forgotKey: ""
+    
   });
 
   // Move fetchStaff function outside useEffect
@@ -31,7 +31,8 @@ export default function Employee() {
 
   useEffect(() => {
     fetchStaff();
-  }, []); // Empty dependency array ensures this only runs once after initial render
+    fetchArch();
+  }, []); 
 
   const fetchArch = async () => {
     try {
@@ -41,10 +42,6 @@ export default function Employee() {
       console.log("Error:", err);
     }
   };
-
-  useEffect(() => {
-    fetchArch();
-  }, []); // Empty dependency array ensures this only runs once after initial render
 
   const handleChange = (e) => {
     e.preventDefault();
@@ -56,20 +53,31 @@ export default function Employee() {
   const handleClick = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:8800/register", emp);
-      notifySuccess();
-      setEmp({
-        username: '',
-        password: '',
-        forgotKey: ''
-      });
-      setOpen(false); // Close popup after successful addition
-      fetchStaff(); // Fetch the updated employee list
+      const response = await axios.post("http://localhost:8800/register", emp);
+      if (response.data.status === 'Success') {
+        notifySuccess();
+        setEmp({
+          username: '',
+          password: '',
+          securityQuestion: '',
+          securityAnswer: ''
+        });
+        setOpen(false); // Close popup after successful addition
+        fetchStaff(); // Fetch the updated employee list
+      } else {
+        throw new Error(response.data.error);
+      }
     } catch (err) {
-      console.log(err);
-      toast.error('Failed to add employee');
+      if (err.response && err.response.status === 409) {
+        // Handle specific case for user already exists
+        toast.error('Account already exists');
+      } else {
+        console.error(err);
+        toast.error('Failed to add employee: ' + err.message);
+      }
     }
   };
+  
 
   const handleDelete = async (id) => {
     try {
@@ -110,6 +118,7 @@ export default function Employee() {
     }
   };
 
+
   return (
     <div className="emp-layout">
       <ToastContainer />
@@ -119,44 +128,60 @@ export default function Employee() {
 
           {/* EMP POPUP */}
           <Popup trigger={open} setTrigger={setOpen}>
-          <h3 className="h3--add--header">Add New Employee</h3>
-            <div className="emp--popup--container">
-              <form className="emp--form">
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  className="emp--input"
-                  required
-                  placeholder="Input username..."
-                  onChange={handleChange}
-                  value={emp.username}
-                />
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  className="emp--input"
-                  required
-                  placeholder="Input password..."
-                  onChange={handleChange}
-                  value={emp.password}
-                />
-                 <input
-                  id="forgotKey"
-                  name="forgotKey"
-                  type="text"
-                  className="emp--input"
-                  required
-                  placeholder="Input key..."
-                  onChange={handleChange}
-                  value={emp.forgotKey}
-                />
-                <button className="btn--emp--add" onClick={handleClick}>ADD</button>
-              </form>
+              <h3 className="h3--add--header">Add New Employee</h3>
+              <div className="emp--popup--container">
+                <form className="emp--form">
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    className="emp--input"
+                    required
+                    placeholder="Input username..."
+                    onChange={handleChange}
+                    value={emp.username}
+                  />
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    className="emp--input"
+                    required
+                    placeholder="Input password..."
+                    onChange={handleChange}
+                    value={emp.password}
+                  />
+                   <select
+                      id="securityQuestion"
+                      name="securityQuestion"
+                      className="emp--input"
+                      required
+                      onChange={handleChange}
+                      value={emp.securityQuestion}
+                  >
+                      <option value="">Select a security question...</option>
+                      <option value="What is your mother's maiden name?">What is your mother&apos;s maiden name?</option>
+                      <option value="What was the name of your first pet?">What was the name of your first pet?</option>
+                      <option value="What was the name of your elementary school?">What was the name of your elementary school?</option>
+                      <option value="What is you favorite game?">What is you favorite game?</option>
+                      <option value="What is your favorite food?">What is your favorite food?</option>
+                  </select>
+
+                  <input
+                    id="securityAnswer"
+                    name="securityAnswer"
+                    type="text"
+                    className="emp--input"
+                    required
+                    placeholder="Input answer..."
+                    onChange={handleChange}
+                    value={emp.securityAnswer}
+                  />
+                  <button className="btn--emp--add" onClick={handleClick}>ADD</button>
+                </form>
+              </div>
+            </Popup>
             </div>
-          </Popup>
-          </div>
           {/* END EMP POPUP */}
 
           {/* ARCHIVED STAFF POPUP */}

@@ -10,6 +10,7 @@ import { UserProvider } from "./Context/UserContext";
 import Forbidden from "./Pages/Forbidden.jsx";
 import Receipt from "./components/Receipt/Receipt.jsx"
 import TodaysSale from "./Pages/TodaysSale.jsx";
+import ForgotPassword from "./Pages/ForgotPassword.jsx";
 TodaysSale
 
 
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/rec" element={<Receipt/>} />
           <Route path="*" element={<Forbidden/>} />
           <Route path="/" element={<Login />} />
+          <Route path="/reset" element={<ForgotPassword />} />
           <Route path="/today" element={<ProtectedRoute element={<TodaysSale />} allowedRoles={['staff']} />} />
           <Route path="/pos" element={<ProtectedRoute element={<POS />} allowedRoles={['admin', 'staff']} />} />
           <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} allowedRoles={['admin']} />} />
