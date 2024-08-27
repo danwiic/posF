@@ -1,6 +1,6 @@
 import "./Receipt.css";
 
-const Receipt = ({ invoiceNumber, items, total, payment, change, discount }) => {
+const Receipt = ({ transactionID, paymentMethod, items, total, payment, change, discount }) => {
   const today = new Date();
   const month = today.getMonth() + 1;
   const year = today.getFullYear();
@@ -17,26 +17,38 @@ const Receipt = ({ invoiceNumber, items, total, payment, change, discount }) => 
       </h2>
       <h1 className="title--receipt">Big Brew</h1>
       <div className="invoice-details">
-        <div className="address">Santa Cruz Dalahican, <br /> Cavite City</div>
+        <div className="address">
+          Santa Cruz Dalahican, <br /> Cavite City
+        </div>
         <p style={{ textAlign: "center", marginBottom: "10px" }}>{currentDate}</p>
-        <p style={{fontSize: "12px", margin: "30px 0", fontWeight: "600"}} >Transaction ID:{invoiceNumber}</p>
+        <p style={{ fontSize: "12px", margin: "10px 0", fontWeight: "600" }}>
+          Transaction ID: {transactionID}
+        </p>
+        <p style={{ fontSize: "12px", margin: "10px 0", fontWeight: "600" }}>
+          Payment Method: {paymentMethod}
+        </p>
       </div>
       <table className="invoice-items">
         <tbody>
           {items.map((item, index) => (
             <tr key={index}>
-              <td className="bup-items">{item.name} (x{item.quantity})</td>
-              <td className="alignright bup-price">₱{item.price.toFixed(2)}</td>
+              <td className="bup-items">
+                {item.name} (x{item.quantity})
+              </td>
+              <td className="alignright bup-price">
+                ₱{item.price.toFixed(2)}
+              </td>
             </tr>
           ))}
           <tr className="total">
             <td className="alignright cells">
               <div className="bup infos">Subtotal:</div>
               <div className="bup infos change">Discount:</div>
-              <div className="bup infos"  style={{ fontSize: "20px", fontWeight: "bold" }}>Final Total:</div>
+              <div className="bup infos" style={{ fontSize: "20px", fontWeight: "bold" }}>
+                Final Total:
+              </div>
               <div className="bup infos payment">Payment:</div>
               <div className="bup infos change">Change:</div>
-          
             </td>
             <td className="alignright cells">
               <div className="bup total">₱{total.toFixed(2)}</div>

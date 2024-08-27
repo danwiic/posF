@@ -90,15 +90,17 @@ export default function ForgotPassword() {
   return (
     <div className="forgot-pass-container">
       {stage === "username" && (
-        <form onSubmit={handleUsernameSubmit} className="forgot-pass-form">
-          <h3>Forgot Password</h3>
-          <input
-            type="text"
-            placeholder="Enter your username"
-            value={username}
-            onChange={handleUsernameChange}
-            required
-          />
+        <form onSubmit={handleUsernameSubmit} className="forgot-pass-form user">
+        <h3>Forgot Password</h3>
+           <div className="fp--input">
+              <input
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={handleUsernameChange}
+                required
+              />
+          </div>
           <button type="submit" disabled={loading} className="btn--forgot">
             {loading ? "Loading..." : "Submit"}
           </button>
@@ -110,14 +112,15 @@ export default function ForgotPassword() {
         <form onSubmit={handleSecurityQuestionSubmit} className="security-question-form">
           <h3>Security Question</h3>
           <p className="question">{securityQuestion}</p>
-          <input
-          className="fp--input"
-            type="text"
-            placeholder="Enter your answer"
-            value={securityAnswer}
-            onChange={handleSecurityAnswerChange}
-            required
-          />
+          <div className="fp--input">
+            <input
+              type="text"
+              placeholder="Enter your answer"
+              value={securityAnswer}
+              onChange={handleSecurityAnswerChange}
+              required
+            />
+          </div>
           <button type="submit" disabled={loading} className="btn--forgot">
             {loading ? "Loading..." : "Submit"}
           </button>
@@ -127,22 +130,25 @@ export default function ForgotPassword() {
       {stage === "passwordReset" && (
         <form onSubmit={handlePasswordResetSubmit} className="password-reset-form">
           <h3>Reset Password</h3>
-          <input
-            className="fp--input"
-            type="password"
-            placeholder="New password"
-            value={newPassword}
-            onChange={handleNewPasswordChange}
-            required
-          />
-          <input
-          className="fp--input"
-            type="password"
-            placeholder="Confirm new password"
-            value={confirmPassword}
-            onChange={handleConfirmPasswordChange}
-            required
-          />
+            <div className="fp--input">
+              <input
+                type="password"
+                placeholder="New password"
+                value={newPassword}
+                onChange={handleNewPasswordChange}
+                required
+              />
+            </div>
+            <div className="fp--input">
+              <input
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={handleConfirmPasswordChange}
+                required
+              />
+          </div>
+          
           <button type="submit" disabled={loading} className="btn--forgot">
             {loading ? "Loading..." : "Submit"}
           </button>

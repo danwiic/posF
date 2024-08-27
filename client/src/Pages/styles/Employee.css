@@ -162,6 +162,11 @@
   width: 100%; /* Full width input */
 }
 
+.emp--input[type="text"]::placeholder, .emp--input[type="password"]::placeholder{
+  color: black;
+  font-weight: 600;
+}
+
 .btn--emp--add {
   padding: 10px;
   background-color: #b04d1c;
@@ -228,4 +233,75 @@
 .popup--view--button{
   display: flex;
   justify-content: space-between;
+}
+
+/* Popup Container Styles */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.popup-overlay.active {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Popup Content Styles */
+.update-popup-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Header Styles */
+.update-popup-container h3 {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+}
+
+/* Form Styles */
+.update-popup-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Input Styles */
+.update-popup-container input[type="text"],
+.update-popup-container input[type="password"],
+.update-popup-container select {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+/* Button Styles */
+.update-popup-container button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.update-popup-container button:hover {
+  background-color: #0056b3;
 }

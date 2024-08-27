@@ -16,13 +16,16 @@ export default function Dashboard() {
     thisMonth: 0,
     total: 0
   });
+  const [selectedDate, setSelectedDate] = useState(''); // State to manage selected date
 
-  const fetchData = async () => {
+  const fetchData = async (date = '') => {
     try {
-      // Fetch transactions
-      const transactionsResponse = await axios.get('http://localhost:8800/order-history');
+      // Fetch transactions based on the selected date
+      const transactionsResponse = await axios.get('http://localhost:8800/order-history', {
+        params: { date }
+      });
       setTransactions(transactionsResponse.data);
-  
+
       // Fetch sales statistics
       const statsResponse = await axios.get('http://localhost:8800/sales');
       console.log('Sales Stats:', statsResponse.data); // Log data to inspect
@@ -33,19 +36,18 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
-  
 
   useEffect(() => {
-    fetchData();
+    fetchData(); // Initial fetch with no date
   }, []);
 
   const handleVoidTransaction = async (transactionId) => {
     const confirmed = window.confirm('Are you sure you want to void this transaction?');
     if (!confirmed) return;
-  
+
     try {
       await axios.post(`http://localhost:8800/transaction/${transactionId}/void`);
-      fetchData(); // Refresh transactions list
+      fetchData(selectedDate); // Refresh transactions list
     } catch (error) {
       console.error('Error voiding transaction:', error);
     }
@@ -59,6 +61,12 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Error fetching order details:', error);
     }
+  };
+
+  const handleDateChange = (event) => {
+    const date = event.target.value;
+    setSelectedDate(date);
+    fetchData(date); // Fetch data for the selected date
   };
 
   return (
@@ -135,7 +143,15 @@ export default function Dashboard() {
                         <th>TransactionID</th>
                         <th>Items Ordered</th>
                         <th>Order Quantity</th>
-                        <th>Order Date</th>
+                        <th>Order Date
+                        <input
+                              type="date"
+                              id="date-picker"
+                              value={selectedDate}
+                              onChange={handleDateChange}
+                              className="date-picker"
+                            />
+                          </th>
                         <th>Payment Method</th>
                         <th>Total Amount</th>
                         <th>Action</th>
@@ -149,7 +165,7 @@ export default function Dashboard() {
                             <button className='view--orders' onClick={() => handleViewDetails(transaction.TransactionID)}>VIEW</button>
                           </td>
                           <td>{transaction.TotalQuantity}</td>
-                          <td>{transaction.OrderDate}</td>
+                          <td>{transaction.OrderDateTime}</td>
                           <td>{transaction.PaymentMethod.toUpperCase()}</td>
                           <td>₱{transaction.TotalAmount.toFixed(2)}</td>
                           <td>

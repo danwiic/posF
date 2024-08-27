@@ -95,7 +95,7 @@ span.dash--sales{
 
 .order--container {
   overflow-x: auto; /* Enable horizontal scrolling */
-  max-height: calc(98vh - 345px);
+  max-height: calc(98vh - 365px);
   border-radius: 8px;
   
 }

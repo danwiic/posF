@@ -18,8 +18,51 @@ export default function Employee() {
     password: "",
     
   });
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [updateOpen, setUpdateOpen] = useState(false)
 
-  // Move fetchStaff function outside useEffect
+  const handleUpdateClick = (employee) => {
+    setSelectedEmployee(employee);
+    setUpdateOpen(true); // Assuming you have a state to control the visibility of the update popup
+  };
+
+  const handleUpdateChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedEmployee(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+
+    // Check if passwords are provided and match
+    if (selectedEmployee.newPassword && selectedEmployee.newPassword !== selectedEmployee.confirmPassword) {
+        toast.error("Passwords do not match");
+        return;
+    }
+
+    const dataToSend = {
+        username: selectedEmployee.username,
+        securityQuestion: selectedEmployee.securityQuestion,
+        securityAnswer: selectedEmployee.securityAnswer,
+    };
+
+    // Include password fields only if they are provided
+    if (selectedEmployee.newPassword) {
+        dataToSend.password = selectedEmployee.newPassword;
+    }
+
+    try {
+        await axios.put(`http://localhost:8800/user/update/${selectedEmployee.id}`, dataToSend);
+        fetchStaff(); // Refresh the employee list
+        setUpdateOpen(false); // Close the update popup
+        toast.success("Employee updated successfully");
+    } catch (err) {
+        console.error(err);
+        toast.error("Failed to update employee");
+    }
+}
+  
+
   const fetchStaff = async () => {
     try {
       const res = await axios.get("http://localhost:8800/employee");
@@ -246,16 +289,69 @@ export default function Employee() {
                   <td className="col--operations">
                     {emp.status === 'active' && (
                       <button className="btn-archive" onClick={() => handleArchive(emp.id, emp.status)}>
-                         {emp.status === "archive" ? "UNARCHIVE" : "ARCHIVE"}
-                    </button>
+                        {emp.status === "archive" ? "UNARCHIVE" : "ARCHIVE"}
+                      </button>
                     )}
-                    <button className="btn-update">UPDATE</button>
+                    <button className="btn-update" onClick={() => handleUpdateClick(emp)}>UPDATE</button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
+        <Popup trigger={updateOpen} setTrigger={setUpdateOpen}>
+          <h3>Update Employee</h3>
+          <div className="update-popup-container">
+          <form onSubmit={handleUpdateSubmit}>
+            <input
+              name="username"
+              type="text"
+              value={selectedEmployee?.username || ''}
+              onChange={handleUpdateChange}
+              placeholder="Update username"
+              required
+            />
+            <input
+              name="newPassword"
+              type="password"  // Input field for new password
+              value={selectedEmployee?.newPassword || ''}
+              onChange={handleUpdateChange}
+              placeholder="New password (leave empty if unchanged)"
+            />
+            <input
+              name="confirmPassword"
+              type="password"  // Input field for confirming new password
+              value={selectedEmployee?.confirmPassword || ''}
+              onChange={handleUpdateChange}
+              placeholder="Confirm new password"
+            />
+            <select
+              name="securityQuestion"
+              value={selectedEmployee?.securityQuestion || ''}
+              onChange={handleUpdateChange}
+              required
+            >
+              <option value="">Select a security question...</option>
+              <option value="What is your mother's maiden name?">What is your mother&apos;s maiden name?</option>
+              <option value="What was the name of your first pet?">What was the name of your first pet?</option>
+              <option value="What was the name of your elementary school?">What was the name of your elementary school?</option>
+              <option value="What is your favorite game?">What is your favorite game?</option>
+              <option value="What is your favorite food?">What is your favorite food?</option>
+            </select>
+            <input
+              name="securityAnswer"
+              type="text"
+              value={selectedEmployee?.securityAnswer || ''}
+              onChange={handleUpdateChange}
+              placeholder="Update answer"
+              required
+            />
+            <button type="submit">UPDATE</button>
+          </form>
+          </div>
+        </Popup>
+
       </Layout>
     </div>
   );

@@ -165,6 +165,82 @@ app.post("/register", (req, res) => {
   });
 });
 
+// UPDATE THE USERS INFO
+app.put('/user/update/:id', (req, res) => {
+  const userId = req.params.id;
+  const { username, password, securityQuestion, securityAnswer } = req.body;
+
+  let updateUserQuery = `
+      UPDATE users 
+      SET username = ? 
+      ${password ? ', password = ?' : ''} 
+      WHERE id = ?`;
+
+  let updateUserValues = [username];
+  if (password) {
+      // Hash the new password
+      bcrypt.hash(password, 10, (err, hash) => {
+          if (err) {
+              console.error("Hashing error:", err);
+              return res.status(500).json({ error: "Error in hashing password" });
+          }
+          updateUserValues.push(hash);
+          updateUserValues.push(userId);
+
+          db.query(updateUserQuery, updateUserValues, (err, result) => {
+              if (err) {
+                  console.error("Database query error:", err);
+                  return res.status(500).json({ error: "Error in query" });
+              }
+
+              // Update security question
+              const updateSecurityQuestionQuery = `
+                  UPDATE security_questions 
+                  SET question = ?, answer = ? 
+                  WHERE user_id = ?`;
+
+              const updateSecurityQuestionValues = [securityQuestion, securityAnswer, userId];
+
+              db.query(updateSecurityQuestionQuery, updateSecurityQuestionValues, (err, result) => {
+                  if (err) {
+                      console.error("Database query error:", err);
+                      return res.status(500).json({ error: "Error in updating security question" });
+                  }
+
+                  return res.status(200).json({ status: "Success" });
+              });
+          });
+      });
+  } else {
+      updateUserValues.push(userId);
+
+      db.query(updateUserQuery, updateUserValues, (err, result) => {
+          if (err) {
+              console.error("Database query error:", err);
+              return res.status(500).json({ error: "Error in query" });
+          }
+
+          // Update security question
+          const updateSecurityQuestionQuery = `
+              UPDATE security_questions 
+              SET question = ?, answer = ? 
+              WHERE user_id = ?`;
+
+          const updateSecurityQuestionValues = [securityQuestion, securityAnswer, userId];
+
+          db.query(updateSecurityQuestionQuery, updateSecurityQuestionValues, (err, result) => {
+              if (err) {
+                  console.error("Database query error:", err);
+                  return res.status(500).json({ error: "Error in updating security question" });
+              }
+
+              return res.status(200).json({ status: "Success" });
+          });
+      });
+  }
+});
+
+
 // ======================CREATE NEW ADMIN ACCOUNT=================================>
 app.post("/register/admin", (req, res) => {
     const checkUser = "SELECT * FROM users WHERE username = ?";
@@ -222,7 +298,6 @@ app.post("/register/admin", (req, res) => {
     });
 });
 // <=======================================================
-
 
 // LOGIN ENDPOINT AND CHECKING ROLES TOO
 const JWT_SECRET = 'super_secret_promise'; 
@@ -626,8 +701,6 @@ app.put('/products/:productId/sizes', async (req, res) => {
   console.log('Received sizes:', sizes);
 });
 
-
-
 // DELETE PRODUCTS
 app.delete('/product/:id/delete', (req, res) => {
   const productId = req.params.id;
@@ -719,6 +792,7 @@ app.post('/payment', (req, res) => {
               }
               res.status(200).json({ 
                 message: 'Payment processed and stock updated successfully',
+                transactionID: orderID, // Return the transaction ID
                 changeAmount // Include calculated changeAmount in response
               });
             });
@@ -731,44 +805,32 @@ app.post('/payment', (req, res) => {
   });
 });
 
-
-
-
+// GET ALL THE ORDER HISTORY
 app.get('/order-history', (req, res) => {
-  const query = `
-    SELECT 
-      Orders.TransactionID, 
-      Orders.OrderDate, 
-      Orders.PaymentMethod, 
-      Orders.TotalAmount, 
-      SUM(OrderItems.Quantity) AS TotalQuantity
-    FROM Orders
-    JOIN OrderItems ON Orders.TransactionID = OrderItems.TransactionID
-    GROUP BY Orders.TransactionID, Orders.OrderDate, Orders.PaymentMethod, Orders.TotalAmount
+  const date = req.query.date;
+  let query = `
+    SELECT o.TransactionID, 
+           DATE_FORMAT(o.OrderDate, '%Y-%m-%d %r') AS OrderDateTime, 
+           o.PaymentMethod, 
+           o.TotalAmount, 
+           SUM(oi.Quantity) AS TotalQuantity
+    FROM Orders o
+    JOIN OrderItems oi ON o.TransactionID = oi.TransactionID
+    ${date ? `WHERE DATE(o.OrderDate) = '${date}'` : ''}
+    GROUP BY o.TransactionID, o.OrderDate, o.PaymentMethod, o.TotalAmount
   `;
 
   db.query(query, (err, results) => {
     if (err) {
-      console.error('Error fetching order history:', err);
-      return res.status(500).json({ error: err.message });
+      console.error('Error executing query:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
     }
-
-    // Format date and time with moment
-    const formattedResults = results.map(record => {
-      const formattedDate = moment(record.OrderDate).format('YYYY-MM-DD hh:mm:ss A');
-      return {
-        ...record,
-        OrderDate: formattedDate
-      };
-    });
-
-    res.json(formattedResults);
+    res.json(results);
   });
 });
 
-
-
-// Endpoint to void a transaction
+// VOIDING TRANSACTION AND RETURNING THE QUANTITY
 app.post('/transaction/:transactionId/void', async (req, res) => {
   const { transactionId } = req.params;
 
@@ -940,6 +1002,7 @@ app.get('/sales', (req, res) => {
   });
 });
 
+// FETCH HISTORY OF TODAYS SALE
 app.get('/today', (req, res) => {
   const query = `
     SELECT o.TransactionID, 
@@ -956,6 +1019,23 @@ app.get('/today', (req, res) => {
   db.query(query, (err, results) => {
     if (err) {
       console.error('Error executing query:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
+    if (results.length === 0) {
+      console.log('No data found for today.');
+    }
+
+    res.json(results);
+  });
+});
+
+
+app.get('/test', (req, res) => {
+  db.query('SELECT 1 AS test', (err, results) => {
+    if (err) {
+      console.error('Error executing test query:', err);
       res.status(500).json({ error: 'Internal Server Error' });
       return;
     }
