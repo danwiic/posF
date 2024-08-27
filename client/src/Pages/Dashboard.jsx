@@ -145,11 +145,11 @@ export default function Dashboard() {
                         <th>Order Quantity</th>
                         <th>Order Date
                         <input
-                              type="date"
-                              id="date-picker"
-                              value={selectedDate}
-                              onChange={handleDateChange}
-                              className="date-picker"
+                            type="date"
+                            id="date-picker"
+                            value={selectedDate}
+                            onChange={handleDateChange}
+                            className="date-picker"
                             />
                           </th>
                         <th>Payment Method</th>

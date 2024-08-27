@@ -20,6 +20,53 @@ export default function Users() {
       securityAnswer: ''
   });
 
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [selectedAdmin, setSelectedAdmin] = useState(null);
+
+  const handleUpdateClick = (admin) => {
+    setSelectedAdmin(admin);
+    setUpdateOpen(true);
+  };
+
+  const handleUpdateChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedAdmin(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+
+    if (selectedAdmin.newPassword && selectedAdmin.newPassword !== selectedAdmin.confirmPassword) {
+        toast.error("Passwords do not match");
+        return;
+    }
+
+    const dataToSend = {
+        username: selectedAdmin.username,
+        securityQuestion: selectedAdmin.securityQuestion,
+        securityAnswer: selectedAdmin.securityAnswer,
+    };
+
+    if (selectedAdmin.newPassword) {
+        dataToSend.password = selectedAdmin.newPassword;
+    }
+
+    try {
+        await axios.put(`http://localhost:8800/user/update/${selectedAdmin.id}`, dataToSend);
+        fetchStaff();
+        setUpdateOpen(false);
+        toast.success("Admin updated successfully");
+      } catch (err) {
+        console.error(err);
+        if (err.response && err.response.status === 400) {
+            toast.error(err.response.data.error || "Failed to update employee");
+        } else {
+            toast.error("Failed to update employee");
+        }
+    }
+}
+
+
   // Move fetchStaff function outside useEffect
   const fetchStaff = async () => {
     try {
@@ -121,10 +168,11 @@ export default function Users() {
       <ToastContainer />
       <Layout>
         <div className="emp--container">
+        <div className="emp--container--con">
 
           {/* EMP POPUP */}
           <Popup trigger={open} setTrigger={setOpen}>
-          <h3 className="h3--add--header">Add New Admin</h3>
+          <h3 className="h3--add--header--admin">ADD ADMIN FORM</h3>
             <div className="emp--popup--container">
               <form className="emp--form">
                 <input
@@ -212,8 +260,7 @@ export default function Users() {
           </Popup>
           {/* END ARCHIVED STAFF POPUP */}
 
-          {/* ADD NEW EMP / STAFF */}
-
+          {/* ADD NEW ADMIN */}
           <div className="popup--view--button">
             <button className="btn--add" onClick={() => setOpen(true)}>ADD ADMIN</button>
             <button className="btn--archive" onClick={() => setArchiveOpen(true)}>VIEW ARCHIVED LIST</button>
@@ -244,12 +291,65 @@ export default function Users() {
                          {emp.status === "archive" ? "UNARCHIVE" : "ARCHIVE"}
                     </button>
                     )}
-                    <button className="btn-update">UPDATE</button>
+                    <button className="btn-update" onClick={() =>  handleUpdateClick(emp)}>UPDATE</button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+
+          <Popup trigger={updateOpen} setTrigger={setUpdateOpen}>
+            <h3>UPDATE ADMIN FORM</h3>
+            <div className="update-popup-container">
+            <form onSubmit={handleUpdateSubmit}>
+              <input
+                name="username"
+                type="text"
+                value={selectedAdmin?.username || ''}
+                onChange={handleUpdateChange}
+                placeholder="Update username"
+                required
+              />
+              <input
+                name="newPassword"
+                type="password"   
+                value={selectedAdmin?.newPassword || ''}
+                onChange={handleUpdateChange}
+                placeholder="New password (leave empty if unchanged)"
+              />
+              <input
+                name="confirmPassword"
+                type="password"  
+                value={selectedAdmin?.confirmPassword || ''}
+                onChange={handleUpdateChange}
+                placeholder="Confirm new password"
+              />
+              <select
+                name="securityQuestion"
+                value={selectedAdmin?.securityQuestion || ''}
+                onChange={handleUpdateChange}
+                required
+              >
+                <option value="">Select a security question...</option>
+                <option value="What is your mother's maiden name?">What is your mother&apos;s maiden name?</option>
+                <option value="What was the name of your first pet?">What was the name of your first pet?</option>
+                <option value="What was the name of your elementary school?">What was the name of your elementary school?</option>
+                <option value="What is your favorite game?">What is your favorite game?</option>
+                <option value="What is your favorite food?">What is your favorite food?</option>
+              </select>
+              <input
+                name="securityAnswer"
+                type="text"
+                value={selectedAdmin?.securityAnswer || ''}
+                onChange={handleUpdateChange}
+                placeholder="Update answer"
+                required
+              />
+              <button type="submit">UPDATE</button>
+            </form>
+            </div>
+          </Popup>
         </div>
       </Layout>
     </div>

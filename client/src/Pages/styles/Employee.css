@@ -130,12 +130,11 @@
   background: rgba(0, 0, 0, 0.5); /* Add a semi-transparent background */
 }
 
-.h3--add--header {
-  color: white;
-  background-color: #4CAF50;
+.h3--add--header--admin, .h3--add--header--emp {
   padding: 8px;
+  font-weight: 800;
   border-radius: 4px;
-  width: 220px;
+  width: 100%;
   border-radius: 0 25px 25px 0;
 }
 
@@ -258,12 +257,12 @@
 
 /* Popup Content Styles */
 .update-popup-container {
+  margin: auto;
   background: #fff;
   border-radius: 8px;
   padding: 20px;
   max-width: 500px;
   width: 100%;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Header Styles */

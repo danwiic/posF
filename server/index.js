@@ -36,7 +36,7 @@ app.get('/token', (req, res) => {
   });
 });
 
-// SELECT ALL STAFF
+// SELECT ALL ACTIVE STAFF
 app.get('/employee', (req, res) => {
   const q = "SELECT * FROM users WHERE status = 'active' AND role = 'staff'"
   db.query(q, (err,data)=> {
@@ -45,7 +45,7 @@ app.get('/employee', (req, res) => {
   })
 });
 
-// SELECT ALL ADMIN
+// SELECT ALL ACTIVE ADMIN
 app.get('/admins', (req, res) => {
   const q = "SELECT * FROM users WHERE status = 'active' AND role = 'admin'"
   db.query(q, (err,data)=> {
@@ -166,79 +166,72 @@ app.post("/register", (req, res) => {
 });
 
 // UPDATE THE USERS INFO
-app.put('/user/update/:id', (req, res) => {
+app.put('/user/update/:id', async (req, res) => {
   const userId = req.params.id;
   const { username, password, securityQuestion, securityAnswer } = req.body;
 
-  let updateUserQuery = `
-      UPDATE users 
-      SET username = ? 
-      ${password ? ', password = ?' : ''} 
-      WHERE id = ?`;
-
-  let updateUserValues = [username];
-  if (password) {
-      // Hash the new password
-      bcrypt.hash(password, 10, (err, hash) => {
-          if (err) {
-              console.error("Hashing error:", err);
-              return res.status(500).json({ error: "Error in hashing password" });
-          }
-          updateUserValues.push(hash);
-          updateUserValues.push(userId);
-
-          db.query(updateUserQuery, updateUserValues, (err, result) => {
-              if (err) {
-                  console.error("Database query error:", err);
-                  return res.status(500).json({ error: "Error in query" });
+  try {
+      // Check if the new username already exists
+      const [rows] = await new Promise((resolve, reject) => {
+          db.query(
+              `SELECT * FROM users WHERE username = ? AND id != ?`,
+              [username, userId],
+              (err, results) => {
+                  if (err) reject(err);
+                  else resolve([results]);
               }
-
-              // Update security question
-              const updateSecurityQuestionQuery = `
-                  UPDATE security_questions 
-                  SET question = ?, answer = ? 
-                  WHERE user_id = ?`;
-
-              const updateSecurityQuestionValues = [securityQuestion, securityAnswer, userId];
-
-              db.query(updateSecurityQuestionQuery, updateSecurityQuestionValues, (err, result) => {
-                  if (err) {
-                      console.error("Database query error:", err);
-                      return res.status(500).json({ error: "Error in updating security question" });
-                  }
-
-                  return res.status(200).json({ status: "Success" });
-              });
-          });
+          );
       });
-  } else {
+
+      if (rows.length > 0) {
+          return res.status(400).json({ error: "Username already exists" });
+      }
+
+      let updateUserQuery = `
+          UPDATE users 
+          SET username = ? 
+          ${password ? ', password = ?' : ''} 
+          WHERE id = ?`;
+
+      let updateUserValues = [username];
+      if (password) {
+          // Hash the new password
+          const hash = await bcrypt.hash(password, 10);
+          updateUserValues.push(hash);
+      }
       updateUserValues.push(userId);
 
-      db.query(updateUserQuery, updateUserValues, (err, result) => {
-          if (err) {
-              console.error("Database query error:", err);
-              return res.status(500).json({ error: "Error in query" });
-          }
-
-          // Update security question
-          const updateSecurityQuestionQuery = `
-              UPDATE security_questions 
-              SET question = ?, answer = ? 
-              WHERE user_id = ?`;
-
-          const updateSecurityQuestionValues = [securityQuestion, securityAnswer, userId];
-
-          db.query(updateSecurityQuestionQuery, updateSecurityQuestionValues, (err, result) => {
-              if (err) {
-                  console.error("Database query error:", err);
-                  return res.status(500).json({ error: "Error in updating security question" });
-              }
-
-              return res.status(200).json({ status: "Success" });
+      await new Promise((resolve, reject) => {
+          db.query(updateUserQuery, updateUserValues, (err, results) => {
+              if (err) reject(err);
+              else resolve(results);
           });
       });
+
+      // Update security question
+      const updateSecurityQuestionQuery = `
+          UPDATE security_questions 
+          SET question = ?, answer = ? 
+          WHERE user_id = ?`;
+
+      const updateSecurityQuestionValues = [securityQuestion, securityAnswer, userId];
+      await new Promise((resolve, reject) => {
+          db.query(updateSecurityQuestionQuery, updateSecurityQuestionValues, (err, results) => {
+              if (err) reject(err);
+              else resolve(results);
+          });
+      });
+
+      return res.status(200).json({ status: "Success" });
+
+  } catch (err) {
+      console.error("Database query error:", err.message || err);
+      return res.status(500).json({ error: "Internal server error" });
   }
 });
+
+
+
 
 
 // ======================CREATE NEW ADMIN ACCOUNT=================================>

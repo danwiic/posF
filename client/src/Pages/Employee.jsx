@@ -23,7 +23,7 @@ export default function Employee() {
 
   const handleUpdateClick = (employee) => {
     setSelectedEmployee(employee);
-    setUpdateOpen(true); // Assuming you have a state to control the visibility of the update popup
+    setUpdateOpen(true); 
   };
 
   const handleUpdateChange = (e) => {
@@ -34,7 +34,6 @@ export default function Employee() {
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if passwords are provided and match
     if (selectedEmployee.newPassword && selectedEmployee.newPassword !== selectedEmployee.confirmPassword) {
         toast.error("Passwords do not match");
         return;
@@ -46,23 +45,25 @@ export default function Employee() {
         securityAnswer: selectedEmployee.securityAnswer,
     };
 
-    // Include password fields only if they are provided
     if (selectedEmployee.newPassword) {
         dataToSend.password = selectedEmployee.newPassword;
     }
 
     try {
         await axios.put(`http://localhost:8800/user/update/${selectedEmployee.id}`, dataToSend);
-        fetchStaff(); // Refresh the employee list
-        setUpdateOpen(false); // Close the update popup
+        fetchStaff(); 
+        setUpdateOpen(false); 
         toast.success("Employee updated successfully");
-    } catch (err) {
+      } catch (err) {
         console.error(err);
-        toast.error("Failed to update employee");
+        if (err.response && err.response.status === 400) {
+            toast.error(err.response.data.error || "Failed to update employee");
+        } else {
+            toast.error("Failed to update employee");
+        }
     }
 }
   
-
   const fetchStaff = async () => {
     try {
       const res = await axios.get("http://localhost:8800/employee");
@@ -105,14 +106,13 @@ export default function Employee() {
           securityQuestion: '',
           securityAnswer: ''
         });
-        setOpen(false); // Close popup after successful addition
-        fetchStaff(); // Fetch the updated employee list
+        setOpen(false);
+        fetchStaff(); 
       } else {
         throw new Error(response.data.error);
       }
     } catch (err) {
       if (err.response && err.response.status === 409) {
-        // Handle specific case for user already exists
         toast.error('Account already exists');
       } else {
         console.error(err);
@@ -121,7 +121,6 @@ export default function Employee() {
     }
   };
   
-
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:8800/employee/${id}`);
@@ -139,7 +138,7 @@ export default function Employee() {
     try {
       const newStatus = currentStatus === 'active' ? 'archive' : 'active';
       await axios.put(`http://localhost:8800/employee/${id}/status`, { status: newStatus });
-      fetchStaff(); // Refresh employee list
+      fetchStaff(); 
       fetchArch(); 
       toast.success(`Employee status changed to ${newStatus}`);
     } catch (err) {
@@ -152,7 +151,7 @@ export default function Employee() {
     try {
       const newStatus = currentStatus === 'archive' ? 'active' : 'archive';
       await axios.put(`http://localhost:8800/employee/${id}/unarch`, { status: newStatus });
-      fetchStaff(); // Refresh employee list
+      fetchStaff(); 
       fetchArch(); 
       toast.success(`Employee status changed to ${newStatus}`);
     } catch (err) {
@@ -160,7 +159,6 @@ export default function Employee() {
       toast.error('Failed to update status');
     }
   };
-
 
   return (
     <div className="emp-layout">
@@ -171,7 +169,7 @@ export default function Employee() {
 
           {/* EMP POPUP */}
           <Popup trigger={open} setTrigger={setOpen}>
-              <h3 className="h3--add--header">Add New Employee</h3>
+              <h3 className="h3--add--header--emp">ADD EMPLOYEE FORM</h3>
               <div className="emp--popup--container">
                 <form className="emp--form">
                   <input
@@ -301,7 +299,7 @@ export default function Employee() {
         </div>
 
         <Popup trigger={updateOpen} setTrigger={setUpdateOpen}>
-          <h3>Update Employee</h3>
+          <h3>UPDATE EMPLOYEE FORM</h3>
           <div className="update-popup-container">
           <form onSubmit={handleUpdateSubmit}>
             <input
