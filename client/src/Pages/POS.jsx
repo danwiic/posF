@@ -150,22 +150,20 @@ export default function POS() {
     }
   };
  
-  // Handle payment
   const handlePay = async (e) => {
     e.preventDefault();
     const total = getTotal();
     const paymentAmount = parseFloat(payment);
-
+  
     if (isNaN(paymentAmount) || paymentAmount < 0) {
       toast.error("Invalid payment amount!");
       return;
     }
-
+  
     if (paymentAmount >= total) {
       try {
         const paymentData = {
-          transactionID: transactionID + 1,
-          paymentMethod: paymentMethod || 'cash', // Use state or default to 'cash'
+          paymentMethod: 'cash', 
           items: receiptItems,
           total: total,
           paymentAmount: paymentAmount,
@@ -205,7 +203,7 @@ export default function POS() {
         toast.error("Payment processing failed.");
       }
     } else {
-      toast.error("Insufficient amount");
+      toast.error("Payment amount is less than the total.");
     }
   };
 
@@ -222,7 +220,6 @@ export default function POS() {
     if (paymentAmount >= total) {
       try {
         const paymentData = {
-          transactionID: transactionID + 1,
           paymentMethod: 'gcash', 
           items: receiptItems,
           total: total,
@@ -236,7 +233,7 @@ export default function POS() {
         });
 
         setReceiptData({
-          transactionID: paymentData.transactionID,
+          transactionID: transactionID + 1,
           paymentMethod: paymentData.paymentMethod.toUpperCase(), 
           items: receiptItems,
           total: total,

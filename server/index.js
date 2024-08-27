@@ -377,19 +377,21 @@ app.post('/add-product', upload.single('image'), (req, res) => {
     }
 
     let categoryId;
-    let insertCategoryQuery;
+    let categoryQuery;
     let categoryValues;
 
     if (category === 'new' && newCategory) {
-      insertCategoryQuery = 'INSERT INTO drink_categories (name) VALUES (?)';
+      // Insert new category
+      categoryQuery = 'INSERT INTO drink_categories (name) VALUES (?)';
       categoryValues = [newCategory];
     } else {
+      // Use existing category
       categoryId = category; 
-      insertCategoryQuery = 'SELECT categoryID FROM drink_categories WHERE categoryID = ?';
+      categoryQuery = 'SELECT categoryID FROM drink_categories WHERE categoryID = ?';
       categoryValues = [categoryId];
     }
 
-    db.query(insertCategoryQuery, categoryValues, (error, results) => {
+    db.query(categoryQuery, categoryValues, (error, results) => {
       if (error) {
         return db.rollback(() => {
           console.error('Error inserting/selecting category:', error);
@@ -398,10 +400,10 @@ app.post('/add-product', upload.single('image'), (req, res) => {
       }
 
       if (category === 'new' && newCategory) {
-        // Handle new category insertion
+        // New category inserted, get its ID
         categoryId = results.insertId;
       } else {
-        // Ensure category exists
+        // Existing category, ensure it exists
         if (results.length === 0) {
           return db.rollback(() => {
             console.error('Category not found');
@@ -411,10 +413,8 @@ app.post('/add-product', upload.single('image'), (req, res) => {
         categoryId = results[0].categoryID;
       }
 
-      const insertProductQuery = `
-        INSERT INTO Products (prodName, categoryID)
-        VALUES (?, ?)
-      `;
+      // Insert product
+      const insertProductQuery = 'INSERT INTO Products (prodName, categoryID) VALUES (?, ?)';
       const productValues = [prodName, categoryId];
 
       db.query(insertProductQuery, productValues, (error, results) => {
@@ -482,6 +482,29 @@ app.post('/add-product', upload.single('image'), (req, res) => {
       });
     });
   });
+});
+
+// ADD NEW CATEGORY IF NEEDED
+app.post('/add-category', async (req, res) => {
+  const { name } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ error: 'Category name is required' });
+  }
+
+  try {
+    const query = 'INSERT INTO drink_categories (name) VALUES (?)';
+    const result = await db.query(query, [name]);
+
+    if (result.affectedRows > 0) {
+      res.status(201).json({ message: 'Category added successfully' });
+    } else {
+      res.status(500).json({ error: 'Failed to add category' });
+    }
+  } catch (error) {
+    console.error('Error adding category:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // GET ALL CATEGORIES IN CATEGORY TABLE FOR PRODUCTS DISPLAY IN POS PAGE
@@ -824,12 +847,15 @@ app.get('/order-history', (req, res) => {
 });
 
 // VOIDING TRANSACTION AND RETURNING THE QUANTITY
-app.post('/transaction/:transactionId/void', async (req, res) => {
+app.post('/transaction/:transactionId/void', (req, res) => {
   const { transactionId } = req.params;
 
-  try {
-    // Begin transaction
-    await new Promise((resolve, reject) => db.beginTransaction(err => err ? reject(err) : resolve()));
+  // Begin transaction
+  db.beginTransaction(err => {
+    if (err) {
+      console.error('Transaction start error:', err);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
 
     // Fetch order details
     db.query('SELECT * FROM Orders WHERE TransactionID = ?', [transactionId], (err, orderDetails) => {
@@ -856,66 +882,63 @@ app.post('/transaction/:transactionId/void', async (req, res) => {
         }
 
         // Update product quantities
-        const updatePromises = orderItems.map(item => 
-          new Promise((resolve, reject) => 
-            db.query(
-              'UPDATE ProductSizes SET quantity = quantity + ? WHERE productID = ?',
-              [item.Quantity, item.ProductID],
-              err => err ? reject(err) : resolve()
-            )
-          )
-        );
-
-        Promise.all(updatePromises).then(() => {
-          // Delete from OrderItems
-          db.query('DELETE FROM OrderItems WHERE TransactionID = ?', [transactionId], (err) => {
-            if (err) {
-              return db.rollback(() => {
-                console.error('Error deleting from OrderItems:', err);
-                res.status(500).json({ message: 'Internal server error' });
-              });
-            }
-
-            // Delete from Orders
-            db.query('DELETE FROM Orders WHERE TransactionID = ?', [transactionId], (err) => {
+        let updateCount = 0;
+        const totalItems = orderItems.length;
+        
+        orderItems.forEach(item => {
+          db.query(
+            'UPDATE ProductSizes SET quantity = quantity + ? WHERE productID = ?',
+            [item.Quantity, item.ProductID],
+            (err) => {
               if (err) {
                 return db.rollback(() => {
-                  console.error('Error deleting from Orders:', err);
+                  console.error('Error updating product quantities:', err);
                   res.status(500).json({ message: 'Internal server error' });
                 });
               }
 
-              // Commit transaction
-              db.commit(err => {
-                if (err) {
-                  return db.rollback(() => {
-                    console.error('Transaction commit error:', err);
-                    res.status(500).json({ message: 'Internal server error' });
+              updateCount++;
+              if (updateCount === totalItems) {
+                // Delete from OrderItems
+                db.query('DELETE FROM OrderItems WHERE TransactionID = ?', [transactionId], (err) => {
+                  if (err) {
+                    return db.rollback(() => {
+                      console.error('Error deleting from OrderItems:', err);
+                      res.status(500).json({ message: 'Internal server error' });
+                    });
+                  }
+
+                  // Delete from Orders
+                  db.query('DELETE FROM Orders WHERE TransactionID = ?', [transactionId], (err) => {
+                    if (err) {
+                      return db.rollback(() => {
+                        console.error('Error deleting from Orders:', err);
+                        res.status(500).json({ message: 'Internal server error' });
+                      });
+                    }
+
+                    // Commit transaction
+                    db.commit(err => {
+                      if (err) {
+                        return db.rollback(() => {
+                          console.error('Transaction commit error:', err);
+                          res.status(500).json({ message: 'Internal server error' });
+                        });
+                      }
+                      res.status(200).json({ message: 'Transaction voided successfully' });
+                    });
                   });
-                }
-                res.status(200).json({ message: 'Transaction voided successfully' });
-              });
-            });
-          });
-        }).catch(err => {
-          db.rollback(() => {
-            console.error('Error updating product quantities:', err);
-            res.status(500).json({ message: 'Internal server error' });
-          });
+                });
+              }
+            }
+          );
         });
       });
     });
-
-  } catch (error) {
-    console.error('Error processing void transaction:', error);
-    try {
-      await new Promise((resolve, reject) => db.rollback(err => err ? reject(err) : resolve()));
-    } catch (rollbackError) {
-      console.error('Error rolling back transaction:', rollbackError);
-    }
-    res.status(500).json({ message: 'Internal server error' });
-  }
+  });
 });
+
+
 
 // =================================== UPDATE PRODUCT QUANTITY / PRICE
 app.put('/product/:id', async (req, res) => {

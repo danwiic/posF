@@ -28,7 +28,7 @@ export default function Dashboard() {
 
       // Fetch sales statistics
       const statsResponse = await axios.get('http://localhost:8800/sales');
-      console.log('Sales Stats:', statsResponse.data); // Log data to inspect
+      console.log('Sales Stats:', statsResponse.data);
       setSalesStats(statsResponse.data);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -38,7 +38,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchData(); // Initial fetch with no date
+    fetchData(); 
   }, []);
 
   const handleVoidTransaction = async (transactionId) => {
@@ -47,7 +47,7 @@ export default function Dashboard() {
 
     try {
       await axios.post(`http://localhost:8800/transaction/${transactionId}/void`);
-      fetchData(selectedDate); // Refresh transactions list
+      fetchData(selectedDate);
     } catch (error) {
       console.error('Error voiding transaction:', error);
     }
@@ -66,7 +66,7 @@ export default function Dashboard() {
   const handleDateChange = (event) => {
     const date = event.target.value;
     setSelectedDate(date);
-    fetchData(date); // Fetch data for the selected date
+    fetchData(date); 
   };
 
   return (

@@ -128,8 +128,34 @@ export default function Products() {
     setShowPopup(true);
   };
 
+  const addNewCategory = async (categoryName) => {
+    try {
+      await axios.post('http://localhost:8800/add-category', { name: categoryName });
+      toast.success('Category added successfully');
+      fetchCategories(); // Refresh the category list
+    } catch (error) {
+      console.error('Error adding category:', error);
+      toast.error('Error adding category');
+    }
+  };
+  
+
   const handleSubmitProduct = async () => {
     try {
+      // Check if the new category is selected and provided
+      if (newProduct.category === 'new' && newCategory.trim()) {
+        await addNewCategory(newCategory.trim());
+        // After adding the new category, fetch the updated categories
+        await fetchCategories();
+        // Set the selected category to the new one
+        setNewProduct(prevProduct => ({ ...prevProduct, category: newCategory.trim() }));
+      } else if (newProduct.category === 'new') {
+        // If 'new' is selected but no new category name is provided, show an error
+        toast.error('Please provide a new category name.');
+        return;
+      }
+  
+      // Prepare and submit the product data
       const formData = new FormData();
       formData.append('prodName', newProduct.name);
       formData.append('priceMedio', newProduct.priceMedio);
@@ -140,20 +166,22 @@ export default function Products() {
       if (newProduct.image) {
         formData.append('image', newProduct.image);
       }
-
+  
       await axios.post('http://localhost:8800/add-product', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-
+  
       toast.success(`${newProduct.name} added successfully`);
-      fetchProducts();
+      fetchProducts(); // Refresh the product list
       setShowPopup(false); // Close popup on success
     } catch (error) {
       console.error('Error submitting product:', error);
+      toast.error('Error submitting product');
     }
   };
+  
 
   const handleShowArchived = async () => {
     await fetchArchivedProducts();
@@ -286,11 +314,11 @@ export default function Products() {
                 </label>
                 <label>
                   Price (Medio):
-                  <input type="number"value={newProduct.priceMedio} onChange={(e) => setNewProduct({ ...newProduct, priceMedio: e.target.value })} />
+                  <input type="number" value={newProduct.priceMedio} onChange={(e) => setNewProduct({ ...newProduct, priceMedio: e.target.value })} />
                 </label>
                 <label>
                   Price (Grande):
-                  <input type="number"  value={newProduct.priceGrande} onChange={(e) => setNewProduct({ ...newProduct, priceGrande: e.target.value })} />
+                  <input type="number" value={newProduct.priceGrande} onChange={(e) => setNewProduct({ ...newProduct, priceGrande: e.target.value })} />
                 </label>
                 <label>
                   Quantity (Medio):
@@ -307,16 +335,7 @@ export default function Products() {
                     {categories.map(category => (
                       <option key={category.categoryID} value={category.categoryID}>{category.name}</option>
                     ))}
-                    <option value="new">Add new category</option>
                   </select>
-                  {newProduct.category === 'new' && (
-                    <input
-                      type="text"
-                      placeholder="New category name"
-                      value={newCategory}
-                      onChange={(e) => setNewCategory(e.target.value)}
-                    />
-                  )}
                 </label>
                 <label>
                   Image:
@@ -328,6 +347,7 @@ export default function Products() {
             </div>
           </Popup>
         )}
+
 
         {showArchivedPopup && (
           <Popup trigger={showArchivedPopup} setTrigger={setShowArchivedPopup}>
@@ -434,9 +454,7 @@ export default function Products() {
             </div>
           </Popup>
         )}
-
       </Layout>
     </div>
-
   );
 }
