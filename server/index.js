@@ -524,7 +524,7 @@ const toBase64 = (buffer, mimeType) => `data:${mimeType};base64,${buffer.toStrin
 
 // FETCH ALL PRODUCTS
 app.get('/product', (req, res) => {
-  const categoryID = req.query.categoryID || 0;
+  const categoryID = parseInt(req.query.categoryID, 10) || 0; // Convert categoryID to integer
 
   let q = `
     SELECT 
@@ -540,10 +540,10 @@ app.get('/product', (req, res) => {
     JOIN ProductSizes ps ON p.productID = ps.productID
     JOIN Sizes s ON ps.sizeID = s.sizeID
     LEFT JOIN Images i ON p.productID = i.productID
-    WHERE p.categoryID = ? AND status = 'active'`;
+    WHERE p.categoryID = ? AND p.status = 'active'
+  `;
 
-  if (categoryID === '0') {
-    // IF CATEGORY IS 0 || THE ALL IT WILL SHOW ALL THE PRODUCTS
+  if (categoryID === 0) {
     q = `
       SELECT 
         p.productID,
@@ -558,16 +558,15 @@ app.get('/product', (req, res) => {
       JOIN ProductSizes ps ON p.productID = ps.productID
       JOIN Sizes s ON ps.sizeID = s.sizeID
       LEFT JOIN Images i ON p.productID = i.productID
-      WHERE status = 'active'
+      WHERE p.status = 'active'
     `;
   }
 
   db.query(q, [categoryID], (err, results) => {
     if (err) {
-      console.error('Error executing query:', err); // Log any error
+      console.error('Error executing query:', err);
       return res.status(500).json({ error: err.message });
     }
-
 
     const products = results.reduce((acc, row) => {
       let product = acc.find(p => p.productID === row.productID);
@@ -576,25 +575,25 @@ app.get('/product', (req, res) => {
           productID: row.productID,
           prodName: row.prodName,
           sizes: [],
-          image: row.imageData ? toBase64(row.imageData, row.mimeType) : null // Use the correct MIME type
+          image: row.imageData ? toBase64(row.imageData, row.mimeType) : null
         };
         acc.push(product);
       }
-    
+
       product.sizes.push({
         sizeID: row.sizeID,
         sizeName: row.sizeName,
         price: row.price,
         quantity: row.quantity
       });
-    
+
       return acc;
     }, []);
-    
 
     res.json(products);
   });
 });
+
 
 // SELECT ALL PRODUCTS THAT IS ARCHIVE IN PRODUCT.JSX
 app.get('/archive/products', (req, res) => {
@@ -758,7 +757,9 @@ app.post('/payment', (req, res) => {
   }
 
   db.beginTransaction(err => {
-    if (err) return res.status(500).json({ message: 'Transaction failed', error: err });
+    if (err) {
+      return res.status(500).json({ message: 'Transaction failed', error: err });
+    }
 
     // Insert order record
     db.query(
@@ -780,21 +781,57 @@ app.post('/payment', (req, res) => {
               `INSERT INTO OrderItems (TransactionID, ProductID, Quantity, ItemPrice, SizeID) 
                VALUES (?, ?, ?, ?, ?)`,
               [orderID, item.productID, item.quantity, item.price, item.sizeID],
-              err => {
+              (err, results) => {
                 if (err) return reject(err);
 
-                // Update product stock
-                db.query(
-                  `UPDATE ProductSizes 
-                   SET quantity = quantity - ? 
-                   WHERE productID = ? 
-                     AND sizeID = ?`,
-                  [item.quantity, item.productID, item.sizeID],
-                  err => {
-                    if (err) return reject(err);
-                    resolve();
-                  }
-                );
+                const orderItemID = results.insertId;
+
+                // Insert addons for this order item
+                if (item.addOns && item.addOns.length > 0) {
+                  let addonQueries = item.addOns.map(addOn => {
+                    return new Promise((resolve, reject) => {
+                      db.query(
+                        `INSERT INTO OrderItemAddons (OrderItemID, AddonID, AddonPrice) 
+                         VALUES (?, ?, ?)`,
+                        [orderItemID, addOn.addonID, addOn.addonPrice],
+                        err => {
+                          if (err) return reject(err);
+                          resolve();
+                        }
+                      );
+                    });
+                  });
+
+                  Promise.all(addonQueries)
+                    .then(() => {
+                      // Update product stock
+                      db.query(
+                        `UPDATE ProductSizes 
+                         SET quantity = quantity - ? 
+                         WHERE productID = ? 
+                           AND sizeID = ?`,
+                        [item.quantity, item.productID, item.sizeID],
+                        err => {
+                          if (err) return reject(err);
+                          resolve();
+                        }
+                      );
+                    })
+                    .catch(err => reject(err));
+                } else {
+                  // If no addons, just update product stock
+                  db.query(
+                    `UPDATE ProductSizes 
+                     SET quantity = quantity - ? 
+                     WHERE productID = ? 
+                       AND sizeID = ?`,
+                    [item.quantity, item.productID, item.sizeID],
+                    err => {
+                      if (err) return reject(err);
+                      resolve();
+                    }
+                  );
+                }
               }
             );
           });
@@ -820,6 +857,9 @@ app.post('/payment', (req, res) => {
     );
   });
 });
+
+
+
 
 // GET ALL THE ORDER HISTORY
 app.get('/order-history', (req, res) => {
@@ -881,14 +921,14 @@ app.post('/transaction/:transactionId/void', (req, res) => {
           });
         }
 
-        // Update product quantities
+        // Ensure each update is performed correctly
         let updateCount = 0;
         const totalItems = orderItems.length;
         
         orderItems.forEach(item => {
           db.query(
-            'UPDATE ProductSizes SET quantity = quantity + ? WHERE productID = ?',
-            [item.Quantity, item.ProductID],
+            'UPDATE ProductSizes SET quantity = quantity + ? WHERE productID = ? AND sizeID = ?',
+            [item.Quantity, item.ProductID, item.SizeID],  // Ensure the correct size is targeted
             (err) => {
               if (err) {
                 return db.rollback(() => {
@@ -1047,19 +1087,93 @@ app.get('/today', (req, res) => {
   });
 });
 
-
-app.get('/test', (req, res) => {
-  db.query('SELECT 1 AS test', (err, results) => {
-    if (err) {
-      console.error('Error executing test query:', err);
-      res.status(500).json({ error: 'Internal Server Error' });
-      return;
-    }
-    res.json(results);
+// FETCH ADDONS THAT IS ACTIVE / AVAILABLE
+app.get('/addons', (req, res) => {
+  const sql = 'SELECT * FROM Addons WHERE addonStatus = "active"';
+  db.query(sql, (err, results) => {
+      if (err) {
+          return res.status(500).json({ error: 'Failed to retrieve addons' });
+      }
+      res.json(results);
   });
 });
 
-// Endpoint to get order details by transactionId
+// FETCH ADDONS THAT IS ARCHIVED
+app.get('/addons/arch', (req, res) => {
+  const sql = 'SELECT * FROM Addons WHERE addonStatus = "archive"';
+  db.query(sql, (err, results) => {
+      if (err) {
+          return res.status(500).json({ error: 'Failed to retrieve addons' });
+      }
+      res.json(results);
+  });
+});
+
+// ADDING NEW ADDON
+app.post('/addons/add', (req, res) => {
+  const { addonName, addonPrice } = req.body;
+
+  const checkSql = 'SELECT * FROM Addons WHERE addonName = ?';
+  db.query(checkSql, [addonName], (err, results) => {
+      if (err) {
+          return res.status(500).json({ error: 'Failed to check for existing addon' });
+      }
+
+      if (results.length > 0) {
+
+          return res.status(400).json({ error: 'Addon with this name already exists' });
+      }
+
+      const insertSql = 'INSERT INTO Addons (addonName, addonPrice) VALUES (?, ?)';
+      db.query(insertSql, [addonName, addonPrice], (err, results) => {
+          if (err) {
+              return res.status(500).json({ error: 'Failed to insert addon' });
+          }
+          res.status(201).json({ addonID: results.insertId });
+      });
+  });
+});
+
+// ARCHIVING ADDONS
+app.put('/addons/:addonID/archive', (req, res) => {
+  const { addonID } = req.params;
+
+  const sql = 'UPDATE Addons SET addonStatus = "archive" WHERE addonID = ?';
+  db.query(sql, [addonID], (err, result) => {
+      if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: 'Failed to archive addon' });
+      }
+      
+      if (result.affectedRows === 0) {
+          return res.status(404).json({ error: 'Addon not found' });
+      }
+      
+      res.status(200).json({ message: 'Addon archived successfully' });
+  });
+});
+
+// UNARCHIVE
+app.put('/addons/:addonID/unarchive', (req, res) => {
+  const { addonID } = req.params;
+
+  const sql = 'UPDATE Addons SET addonStatus = "active" WHERE addonID = ?';
+  db.query(sql, [addonID], (err, result) => {
+      if (err) {
+          console.error('Database error:', err);
+          return res.status(500).json({ error: 'Failed to archive addon' });
+      }
+      
+      if (result.affectedRows === 0) {
+          return res.status(404).json({ error: 'Addon not found' });
+      }
+      
+      res.status(200).json({ message: 'Addon archived successfully' });
+  });
+});
+
+
+// DELETING ADDONS
 app.get('/order-details/:transactionId', (req, res) => {
   const transactionId = req.params.transactionId;
 
@@ -1069,15 +1183,23 @@ app.get('/order-details/:transactionId', (req, res) => {
       p.prodName, 
       s.sizeName, 
       oi.Quantity, 
-      oi.ItemPrice
+      oi.ItemPrice,
+      GROUP_CONCAT(a.addonName SEPARATOR ', ') AS Addons,
+      GROUP_CONCAT(CONCAT('₱', oia.AddonPrice) SEPARATOR ', ') AS AddonPrices
     FROM 
       OrderItems oi
     JOIN 
       Products p ON oi.ProductID = p.productID
     JOIN 
       Sizes s ON oi.SizeID = s.sizeID
+    LEFT JOIN 
+      OrderItemAddons oia ON oi.OrderItemID = oia.OrderItemID
+    LEFT JOIN 
+      Addons a ON oia.AddonID = a.addonID
     WHERE 
       oi.TransactionID = ?
+    GROUP BY 
+      oi.ProductID, oi.SizeID, oi.Quantity, oi.ItemPrice
   `;
 
   db.query(query, [transactionId], (err, results) => {
@@ -1089,6 +1211,49 @@ app.get('/order-details/:transactionId', (req, res) => {
     res.json(results);
   });
 });
+
+
+// Endpoint to get order details by transactionId
+app.get('/order-details/:transactionId', (req, res) => {
+  const transactionId = req.params.transactionId;
+
+  const query = `
+    SELECT 
+      oi.ProductID, 
+      p.prodName, 
+      s.sizeName, 
+      oi.Quantity, 
+      oi.ItemPrice,
+      GROUP_CONCAT(
+        CONCAT(a.addonName, ' (₱', oia.AddonPrice, ')') 
+        SEPARATOR ', '
+      ) AS Addons
+    FROM 
+      OrderItems oi
+    JOIN 
+      Products p ON oi.ProductID = p.productID
+    JOIN 
+      Sizes s ON oi.SizeID = s.sizeID
+    LEFT JOIN 
+      OrderItemAddons oia ON oi.OrderItemID = oia.OrderItemID
+    LEFT JOIN 
+      Addons a ON oia.AddonID = a.addonID
+    WHERE 
+      oi.TransactionID = ?
+    GROUP BY 
+      oi.ProductID, oi.SizeID, oi.Quantity, oi.ItemPrice
+  `;
+
+  db.query(query, [transactionId], (err, results) => {
+    if (err) {
+      console.error('Error fetching order details:', err);
+      res.status(500).send('Server error');
+      return;
+    }
+    res.json(results);
+  });
+});
+
 
 // Endpoint to get security question based on username
 app.post("/forgot-password", (req, res) => {

@@ -155,8 +155,8 @@
 
 .popup--prod--button{
   display: flex;
-  justify-content: space-between;
-  margin-right: 125px;
+  max-width: calc(100vw - 100px);
+  justify-content: space-around;
 }
 
 
@@ -219,4 +219,104 @@
 
 .product--info--table.size{
   font-weight: 500;
+}
+
+.view--btn{
+  display: flex;
+}
+
+.addon--action--con{
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.addon--action--con > button{
+  all: unset;
+  padding: 8px;
+  background-color: rgba(0, 0, 0, 0.763);
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 2px 5px;
+  font-weight: bold;
+}
+
+.addons--arch--info{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+.no--addons{
+  text-align: center;
+}
+
+.btn--back{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.722);
+  padding: 6px;
+  color: white;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  margin-top: 5px;
+}
+
+.add--addons{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 300px;
+  margin: auto;
+}
+
+.add--addon--form{
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.new--addon--input{
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+.btn--add--addon{
+  margin-bottom: 5px;
+  padding: 6px;
+  background-color: rgb(71, 183, 49);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+}
+
+.btn--add--addon:hover{
+  background-color: rgb(61, 145, 46);
+}
+
+.btn--cancel--add--addon{
+  margin-bottom: 5px;
+  padding: 6px;
+  background-color: rgb(226, 69, 69);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+}
+
+.btn--cancel--add--addon:hover{
+  background-color: rgb(188, 58, 58);
+}
+
+.btn--prod--delete{
+  margin-left: 4px;
 }

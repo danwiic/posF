@@ -1,3 +1,5 @@
+import React from 'react'; // Import React
+import PropTypes from 'prop-types';
 import "./Receipt.css";
 
 const Receipt = ({ transactionID, paymentMethod, items, total, payment, change, discount }) => {
@@ -31,19 +33,31 @@ const Receipt = ({ transactionID, paymentMethod, items, total, payment, change, 
       <table className="invoice-items">
         <tbody>
           {items.map((item, index) => (
-            <tr key={index}>
-              <td className="bup-items">
-                {item.name} (x{item.quantity})
-              </td>
-              <td className="alignright bup-price">
-                ₱{item.price.toFixed(2)}
-              </td>
-            </tr>
+            <React.Fragment key={index}>
+              <tr>
+                <td className="bup-items">
+                  {item.name} (x{item.quantity})
+                </td>
+                <td className="alignright bup-price">
+                  ₱{item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </td>
+              </tr>
+              {item.addOns && item.addOns.length > 0 && item.addOns.map((addOn, addOnIndex) => (
+                <tr key={`addon-${index}-${addOnIndex}`}>
+                  <td className="bup-items">
+                    &nbsp;&nbsp;• {addOn.name}
+                  </td>
+                  <td className="alignright bup-price">
+                    ₱{addOn.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                </tr>
+              ))}
+            </React.Fragment>
           ))}
           <tr className="total">
             <td className="alignright cells">
               <div className="bup infos">Subtotal:</div>
-              <div className="bup infos change">Discount:</div>
+              {discount > 0 && <div className="bup infos change">Discount:</div>}
               <div className="bup infos" style={{ fontSize: "20px", fontWeight: "bold" }}>
                 Final Total:
               </div>
@@ -51,21 +65,21 @@ const Receipt = ({ transactionID, paymentMethod, items, total, payment, change, 
               <div className="bup infos change">Change:</div>
             </td>
             <td className="alignright cells">
-              <div className="bup total">₱{total.toFixed(2)}</div>
-              <div className="bup">₱{discount ? discountAmount.toFixed(2) : (0).toFixed(2)}</div>
-              <div className="bup total">₱{finalTotal.toFixed(2)}</div>
-              <div className="bup">₱{parseFloat(payment).toFixed(2)}</div>
-              <div className="bup">₱{parseFloat(change).toFixed(2)}</div>
+              <div className="bup total">₱{total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              {discount > 0 && <div className="bup">₱{discountAmount.toFixed(2)}</div>}
+              <div className="bup total">₱{finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              <div className="bup">₱{parseFloat(payment).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              <div className="bup">₱{parseFloat(change).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </td>
           </tr>
         </tbody>
       </table>
       <div className="footer">
         <div style={{ marginBottom: "12px", fontSize: "14px" }}>Thank you and Come again!</div>
-        <div>*** OFFICIAL RECEIPT ***</div>
       </div>
     </div>
   );
 };
+
 
 export default Receipt;

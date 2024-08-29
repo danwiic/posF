@@ -16,6 +16,7 @@ export default function Dashboard() {
     thisMonth: 0,
     total: 0
   });
+  
   const [selectedDate, setSelectedDate] = useState(''); // State to manage selected date
 
   const fetchData = async (date = '') => {
@@ -73,69 +74,85 @@ export default function Dashboard() {
     <div className='dash--body'>
       <Layout>
         <div className="dash--container">
-          <div className="dash--popup">
-            <Popup trigger={open} setTrigger={setOpen} className="bg-dash">
-              <h1 style={{ marginBottom: "15px", textAlign: "center", fontSize: "20px", fontWeight: "800" }}>
-                ITEMS ORDERED
-              </h1>
-              {selectedTransaction.length > 0 && (
-                <table className='order--table'>
-                  <thead>
-                    <tr>
-                      <th>ProductID</th>
-                      <th>Item Name</th>
-                      <th>Size</th>
-                      <th>Quantity</th>
-                      <th>Price</th>
+
+        <div className="dash--popup">
+          <Popup trigger={open} setTrigger={setOpen} className="bg-dash">
+            <h1 style={{ marginBottom: "15px", textAlign: "center", fontSize: "20px", fontWeight: "800" }}>
+              ITEMS ORDERED
+            </h1>
+            {selectedTransaction.length > 0 && (
+              <table className='ordered--table'>
+                <thead>
+                  <tr>
+                    <th>ProductID</th>
+                    <th>Item Name</th>
+                    <th>Size</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Addons</th>
+                    <th>Addons Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedTransaction.map(item => (
+                    <tr key={item.ProductID + item.sizeName}>
+                      <td>{item.ProductID}</td>
+                      <td>{item.prodName}</td>
+                      <td>{item.sizeName}</td>
+                      <td>{item.Quantity}</td>
+                      <td>₱{item.ItemPrice.toFixed(2)}</td>
+                      <td>{item.Addons || 'None'}</td>
+                      <td>{item.AddonPrices || '-'}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {selectedTransaction.map(item => (
-                      <tr key={item.ProductID + item.sizeName}>
-                        <td>{item.ProductID}</td>
-                        <td>{item.prodName}</td>
-                        <td>{item.sizeName}</td>
-                        <td>{item.Quantity}</td>
-                        <td>₱{item.ItemPrice.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </Popup>
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </Popup>
+        </div>
 
           <div className="cards--container">
             <div className="cards">
               <div className="card--total today--total">
-                <div className='sales--header'>TODAY&apos;S SALES</div>
-                <span className='dash--sales'>₱{salesStats.today.toFixed(2)}</span>
+                <div className='sales--header'>SALES TODAY</div>
+                <span className='dash--sales'>₱{salesStats.today.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="card--total weekly--total">
-                <div className='sales--header'>WEEKLY SALES</div>
-                <span className='dash--sales'>₱{salesStats.thisWeek.toFixed(2)}</span>
+                <div className='sales--header'> THIS WEEK SALES</div>
+                <span className='dash--sales'>₱{salesStats.thisWeek.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="card--total weekly--total">
-                <div className='sales--header'>LAST WEEK SALES</div>
-                <span className='dash--sales'>₱{salesStats.lastWeek.toFixed(2)}</span>
+                <div className='sales--header'>SALES LAST WEEK</div>
+                <span className='dash--sales'>₱{salesStats.lastWeek.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="card--total monthly--total">
-                <div className='sales--header'>MONTHLY SALES</div>
-                <span className='dash--sales'>₱{salesStats.thisMonth.toFixed(2)}</span>
+                <div className='sales--header'>SALES THIS MONTH</div>
+                <span className='dash--sales'>₱{salesStats.thisMonth.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
               <div className="card--total overall--total">
-                <div className='sales--header'>TOTAL SALES</div>
-                <span className='dash--sales'>₱{salesStats.total.toFixed(2)}</span>
+                <div className='sales--header'>OVERALL SALES</div>
+                <span className='dash--sales'>₱{salesStats.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
           </div>
 
           <div className="order--history">
-            <h3 className='order--head'>Order History</h3>
+            <h3 className='order--head'>Transaction History</h3>
             <div className="table-wrapper">
               <div className="order--container">
                 {loading ? (
                   <p>Loading...</p>
+                ) : transactions.length === 0 ? (
+                      <div className='no--record--container'>
+                       <h2 className='no--record'>There are no records of transaction on the selected date.</h2>
+                       <input
+                            type="date"
+                            id="date-picker"
+                            value={selectedDate}
+                            onChange={handleDateChange}
+                            className="date-picker"
+                          />
+                      </div> 
                 ) : (
                   <table className='order--table'>
                     <thead>
@@ -144,14 +161,14 @@ export default function Dashboard() {
                         <th>Items Ordered</th>
                         <th>Order Quantity</th>
                         <th>Order Date
-                        <input
+                          <input
                             type="date"
                             id="date-picker"
                             value={selectedDate}
                             onChange={handleDateChange}
                             className="date-picker"
-                            />
-                          </th>
+                          />
+                        </th>
                         <th>Payment Method</th>
                         <th>Total Amount</th>
                         <th>Action</th>

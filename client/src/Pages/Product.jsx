@@ -5,6 +5,9 @@ import './styles/Products.css';
 import Popup from '../components/Popup/Popup';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; 
+import { IoIosArrowRoundBack } from "react-icons/io";
+
+
 
 export default function Products() {
   const [stockData, setStockData] = useState([]);
@@ -12,7 +15,11 @@ export default function Products() {
   const [showPopup, setShowPopup] = useState(false);
   const [showUpdate, setShowUpdate] = useState(false);
   const [showArchivedPopup, setShowArchivedPopup] = useState(false);
-  
+  const [showAddons, setShowAddons] = useState(false)
+  const [addons, setAddons] = useState([])
+  const [showArchAddon, setShowArchAddon] = useState(false)
+  const [archAddon, setArchAddon] = useState([])
+  const [showAddAddons, setShowAddAddons] = useState(false)
   const [newProduct, setNewProduct] = useState({
     name: '',
     priceMedio: '',
@@ -29,7 +36,7 @@ export default function Products() {
   const fetchProducts = async () => {
     try {
       const response = await axios.get('http://localhost:8800/products');
-      const data = response.data;
+      const data = response.data
       
       const formattedData = data.reduce((acc, item) => {
         let product = acc.find(p => p.id === item.productID);
@@ -52,16 +59,16 @@ export default function Products() {
   
         return acc;
       }, []);
-      setStockData(formattedData);
+      setStockData(formattedData)
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error('Error fetching products:', error)
     }
-  };
+  }
 
   const fetchArchivedProducts = async () => {
     try {
       const response = await axios.get('http://localhost:8800/archive/products');
-      const data = response.data;
+      const data = response.data
       const formattedData = data.reduce((acc, item) => {
         const existingProduct = acc.find(p => p.id === item.productID);
         if (existingProduct) {
@@ -89,7 +96,7 @@ export default function Products() {
     } catch (error) {
       console.error('Error fetching archived products:', error)
     }
-  };
+  }
 
   const fetchCategories = async () => {
     try {
@@ -104,58 +111,74 @@ export default function Products() {
     fetchProducts()
     fetchCategories()
     fetchArchivedProducts()
+    fetchAddon()
+    fetchArchAddon()
   }, [])
   
 
   const handleArchiveProduct = async (productIndex) => {
-    const updatedStock = [...stockData];
-    const productId = updatedStock[productIndex].id;
+    const updatedStock = [...stockData]
+    const productId = updatedStock[productIndex].id
   
     // Archive product
     try {
-      await axios.put(`http://localhost:8800/product/${productId}/archive`);
-      toast.success('Product archived successfully');
-      fetchProducts(); // Refresh the product list to reflect the changes
-      // Optionally call fetchArchivedProducts() if you need to update the archived products list
+      await axios.put(`http://localhost:8800/product/${productId}/archive`)
+      toast.success('Product archived successfully')
+      fetchProducts()
     } catch (error) {
-      console.error('Error archiving product:', error);
-      toast.error('Error archiving product');
+      console.error('Error archiving product:', error)
+      toast.error('Error archiving product')
     }
-  };
+  }
   
 
   const handleAddProduct = () => {
     setShowPopup(true);
-  };
+  }
+  const handleViewAddons = () => {
+    setShowAddons(true);
+  }
+  const handleViewArchAddons = () => {
+    setShowArchAddon(true)
+    setShowAddons(false)
+  }
+  const handleBackAddons = () => {
+    setShowAddons(true);
+    setShowArchAddon(false)
+    setShowAddAddons(false)
+  }
+  const handleBackAddAddons = () => {
+    setShowAddons(true);
+    setShowAddAddons(false)
+  }
+  const handleViewAddAddons = () => {
+    setShowAddAddons(true)
+    setShowAddons(false)
+  }
 
   const addNewCategory = async (categoryName) => {
     try {
       await axios.post('http://localhost:8800/add-category', { name: categoryName });
       toast.success('Category added successfully');
-      fetchCategories(); // Refresh the category list
+      fetchCategories(); 
     } catch (error) {
       console.error('Error adding category:', error);
       toast.error('Error adding category');
     }
-  };
+  }
   
 
   const handleSubmitProduct = async () => {
     try {
-      // Check if the new category is selected and provided
       if (newProduct.category === 'new' && newCategory.trim()) {
         await addNewCategory(newCategory.trim());
-        // After adding the new category, fetch the updated categories
         await fetchCategories();
-        // Set the selected category to the new one
         setNewProduct(prevProduct => ({ ...prevProduct, category: newCategory.trim() }));
       } else if (newProduct.category === 'new') {
-        // If 'new' is selected but no new category name is provided, show an error
         toast.error('Please provide a new category name.');
         return;
       }
-  
-      // Prepare and submit the product data
+
       const formData = new FormData();
       formData.append('prodName', newProduct.name);
       formData.append('priceMedio', newProduct.priceMedio);
@@ -174,19 +197,19 @@ export default function Products() {
       });
   
       toast.success(`${newProduct.name} added successfully`);
-      fetchProducts(); // Refresh the product list
-      setShowPopup(false); // Close popup on success
+      fetchProducts(); 
+      setShowPopup(false);
     } catch (error) {
       console.error('Error submitting product:', error);
       toast.error('Error submitting product');
     }
-  };
+  }
   
 
   const handleShowArchived = async () => {
     await fetchArchivedProducts();
     setShowArchivedPopup(true);
-  };
+  }
 
   const handleUnarchiveProduct = async (productId) => {
     try {
@@ -198,14 +221,14 @@ export default function Products() {
       console.error('Error unarchiving product:', error);
       toast.error('Error unarchiving product');
     }
-  };
+  }
 
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleEditProduct = (product) => {
     setSelectedProduct(product);
     setShowUpdate(true); 
-  };
+  }
   
   
   const handleUpdateProduct = async () => {
@@ -235,7 +258,7 @@ export default function Products() {
       console.error('Error updating product:', error);
       toast.error('Error updating product');
     }
-  };
+  }
 
   const handleDeleteProduct = async (productId) => {
     try {
@@ -247,8 +270,87 @@ export default function Products() {
       console.error('Error deleting product:', error);
       toast.error('Error deleting product');
     }
+  }
+
+  const fetchAddon = async () => {
+    try{
+   const res = await axios.get('http://localhost:8800/addons')
+      setAddons(res.data)
+    }catch(err){
+      console.log(err)
+    }
+  } 
+
+  const fetchArchAddon = async () => {
+    try{
+   const res = await axios.get('http://localhost:8800/addons/arch')
+      setArchAddon(res.data)
+    }catch(err){
+      console.log(err)
+    }
+  } 
+
+  const archiveAddon = async (addonID) => {
+    try {
+      await axios.put(`http://localhost:8800/addons/${addonID}/archive`);
+      toast.success("Addon archived successfully")
+      fetchAddon()
+      fetchArchAddon()
+    } catch (err) {
+      console.error('Error archiving addon:', err)
+      toast.error("Failed to archive addon")
+    }
   };
 
+  const unArchiveAddon = async (addonID) => {
+    try{
+      await axios.put(`http://localhost:8800/addons/${addonID}/unarchive`)
+      toast.success("Unarchived successfully")
+      fetchAddon()
+      fetchArchAddon()
+    }catch(err){
+      console.log(err)
+    }
+    fetchArchAddon()
+  }
+
+  const deleteAddon = async (addonID) => {
+    try{
+      await axios.delete(`http://localhost:8800/addons/${addonID}/delete`)
+      toast.success('Deleted successfully')
+      fetchAddon()
+      fetchArchAddon()
+    }catch(err){
+      console.error(err)
+    }
+  }
+
+  const [addonName, setAddonName] = useState('');
+  const [addonPrice, setAddonPrice] = useState('');
+
+  const handleAddAddon = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post('http://localhost:8800/addons/add', {
+        addonName,
+        addonPrice,
+      });
+
+      if (response.status === 201) {
+        toast.success('Addon added successfully!');
+        setAddonName('');
+        setAddonPrice('');
+        fetchAddon()
+      }
+    } catch (error) {
+      if (error.response && error.response.status === 400) {
+        toast.error('Addon with this name already exists.');
+      } else {
+        toast.error('An unexpected error occurred.');
+      }
+    }
+  };
 
   return (
     <div className="stock--main--container">
@@ -257,6 +359,7 @@ export default function Products() {
         <div className="stock-container">
           <div className="popup--prod--button">
             <button onClick={handleAddProduct} className='btn--add'>Add New Product</button>
+            <button onClick={handleViewAddons} className="btn--archive">VIEW ADDONS</button>
             <button onClick={handleShowArchived} className="btn--archive">VIEW ARCHIVED PRODUCTS</button>
           </div>
           <div className="table--wrapper--prod">
@@ -302,7 +405,9 @@ export default function Products() {
               </tbody>
             </table>
           </div>
+          
         </div>
+
         {showPopup && (
           <Popup trigger={showPopup} setTrigger={setShowPopup}>
             <div className="popup-content">
@@ -348,6 +453,91 @@ export default function Products() {
           </Popup>
         )}
 
+        {showAddons && (
+          <Popup trigger={showAddons} setTrigger={setShowAddons} className="bg-dash">
+          <h1 style={{ marginBottom: "15px", textAlign: "center", fontSize: "20px", fontWeight: "800" }}>
+            ADDONS
+          </h1>
+
+         <div className="addon--action--con">
+            <button 
+              onClick={handleViewAddAddons}>
+              Add Add-on
+            </button>
+
+            <button 
+              onClick={handleViewArchAddons}>
+              VIEW ARCHIVED ADDON
+            </button>
+         </div>
+
+            <table className='ordered--table'>
+              <thead>
+                <tr>
+                  <th>Add-on Name</th>
+                  <th>Price</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {addons.map(add => (
+                  <tr key={add.addonID} id={add.id}>
+                    <td>{add.addonName}</td>
+                    <td>{add.addonPrice}</td>
+                    <td>
+                    <button onClick={() => archiveAddon(add.addonID)} className='btn--prod--archive'>ARCHIVE</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+       </Popup>
+      )}
+
+        {showArchAddon && (
+          <Popup trigger={showArchAddon} setTrigger={setShowArchAddon} className="bg-dash">
+          {archAddon.length === 0 ? ( 
+            <div className='addons--arch--info'>
+            <p className='no--addons'>No archived add-ons</p>
+            <button onClick={handleBackAddons} className='btn--back'><IoIosArrowRoundBack />BACK</button>
+          </div>
+        ) :
+           <>
+           <h1 style={{ marginBottom: "15px", textAlign: "center", fontSize: "20px", fontWeight: "800" }}>
+           ARCHIVED ADDONS
+         </h1>
+       <div className="addon--action--con">
+       </div>
+           <table className='ordered--table'>
+             <thead>
+               <tr>
+                 <th>Add-on Name</th>
+                 <th>Action</th>
+               </tr>
+             </thead>
+             <tbody>
+               {archAddon.map(add => (
+                 <tr key={`${add.addonID} - ${add.addonID}`} id={add.id}>
+                   <td>{add.addonName}</td>
+                   <td>
+                     <button onClick={() => unArchiveAddon(add.addonID)}
+                      className='btn--prod--unarchive'
+                      >UNARCHIVE</button>
+                     <button onClick={() => deleteAddon(add.addonID)}
+                      className='btn--prod--delete'
+                      >DELETE</button>
+                   </td>
+                 </tr>
+               ))}
+             </tbody>
+           </table>
+          <div className="addons--arch--info">
+          <button onClick={handleBackAddons} className='btn--back'><IoIosArrowRoundBack />BACK</button>
+          </div>
+       </>
+        }
+      </Popup>
+        )}
 
         {showArchivedPopup && (
           <Popup trigger={showArchivedPopup} setTrigger={setShowArchivedPopup}>
@@ -395,6 +585,41 @@ export default function Products() {
             </div>
           </Popup>
         )}
+
+        {showAddAddons && (
+           <Popup trigger={showAddAddons} setTrigger={setShowAddAddons}>
+           <h1 style={{ marginBottom: '15px', textAlign: 'center', fontSize: '20px', fontWeight: '800' }}>
+             NEW ADD-ONS
+           </h1>
+           <div className='add--addons'>
+             <form onSubmit={handleAddAddon} className='add--addon--form'>
+               <input
+                 className='new--addon--input'
+                 type='text'
+                 placeholder='Enter add-on name...'
+                 value={addonName}
+                 onChange={(e) => setAddonName(e.target.value)}
+                 required
+               />
+               <input
+                 className='new--addon--input'
+                 type='number'
+                 placeholder='Enter add-on price...'
+                 value={addonPrice}
+                 onChange={(e) => setAddonPrice(e.target.value)}
+                 maxLength="3"
+                 required
+               />
+               <button className='btn--add--addon' type='submit'>
+                 ADD
+               </button>
+             </form>
+             <button onClick={handleBackAddAddons} className='btn--cancel--add--addon'>
+               CANCEL
+             </button>
+           </div>
+         </Popup>
+        )}
         
         {showUpdate && (
           <Popup trigger={showUpdate} setTrigger={setShowUpdate}>
@@ -416,8 +641,7 @@ export default function Products() {
                       <label>
                         Price:
                         <input
-                          type="number"
-                          step="0.01"
+                          type="text"
                           value={size.price}
                           onChange={(e) => {
                             const newPrice = parseFloat(e.target.value);

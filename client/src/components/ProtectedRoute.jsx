@@ -5,7 +5,6 @@ const ProtectedRoute = ({ element, allowedRoles, redirectPath = '/pos' }) => {
   const { user } = useUser();
 
   if (!user) {
-    // User is not logged in
     return <Navigate to="/" />;
   }
 

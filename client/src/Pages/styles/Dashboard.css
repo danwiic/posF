@@ -86,10 +86,10 @@ span.dash--sales{
   margin-top: 20px;
   margin-bottom: 20px;
   background-color: white;
-  width: 160px;
+  width: 220px;
+  font-weight: 700;
   padding: 12px;
   border-radius: 0 25px 25px 0;
-  font-weight: 600;
   box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
 }
 
@@ -97,11 +97,10 @@ span.dash--sales{
   overflow-x: auto; /* Enable horizontal scrolling */
   max-height: calc(98vh - 365px);
   border-radius: 8px;
-  
 }
 
 .table-wrapper {
-  max-width: 100%; /* Ensure wrapper does not exceed container width */
+  max-width: 100%; 
   box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
   margin-bottom: 0;
   border-radius: 8px;
@@ -116,36 +115,89 @@ span.dash--sales{
   box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
 }
 
+.ordered--table {
+  width: 100%;
+  border-spacing: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+  max-height: 400px; 
+}
+
+.ordered--table tbody {
+  display: block;
+  max-height: 400px;
+  overflow-y: auto; 
+  overflow-x: hidden; 
+}
+
+.ordered--table thead,
+.ordered--table tbody tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.no--record{
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.no--record--container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 400px;
+  max-height: calc(100vh - 400px);
+  justify-content: center;
+  overflow:hidden;
+}
+
+.date-picker{
+  padding: 4px;
+  margin-left: 4px;
+  z-index: auto;
+}
+
 .order--table th, 
-.order--table td {
+.order--table td,
+.ordered--table th, 
+.ordered--table td  {
   padding: 8px;
   border-radius: 0;
   text-align: center;
   border-bottom: 1px solid #ced6d0;
 }
 
-.order--table th {
+
+.order--table th,
+.ordered--table th {
   font-size: 14px;
   padding: 14px;
 }
 
-.order--table td {
+.order--table td,
+.ordered--table td {
   font-size: 13px;
 }
 
-.order--table th:first-child {
+.order--table th:first-child,
+.ordered--table th:first-child  {
   border-top-left-radius: 8px;
 }
 
-.order--table th:last-child {
+.order--table th:last-child,
+.ordered--table th:last-child  {
   border-top-right-radius: 8px;
 }
 
-.order--table tr:last-child td:first-child {
+.order--table tr:last-child td:first-child,
+.ordered--table tr:last-child td:first-child {
   border-bottom-left-radius: 8px;
 }
 
-.order--table tr:last-child td:last-child {
+.order--table tr:last-child td:last-child,
+.ordered--table tr:last-child td:last-child  {
   border-bottom-right-radius: 8px;
 }
 
@@ -171,6 +223,9 @@ span.dash--sales{
   margin: auto;
   margin-left: 200px;
   align-items: center;
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .view--orders{
