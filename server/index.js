@@ -493,19 +493,85 @@ app.post('/add-category', async (req, res) => {
   }
 
   try {
-    const query = 'INSERT INTO drink_categories (name) VALUES (?)';
-    const result = await db.query(query, [name]);
+    // Check if category already exists
+    const checkQuery = 'SELECT COUNT(*) AS count FROM drink_categories WHERE name = ?';
+    db.query(checkQuery, [name], (error, results) => {
+      if (error) {
+        console.error('Error checking category existence:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
 
-    if (result.affectedRows > 0) {
-      res.status(201).json({ message: 'Category added successfully' });
-    } else {
-      res.status(500).json({ error: 'Failed to add category' });
-    }
+      const count = results[0].count;
+
+      if (count > 0) {
+        return res.status(409).json({ error: 'Category already exists' });
+      }
+
+      // Insert the new category
+      const insertQuery = 'INSERT INTO drink_categories (name) VALUES (?)';
+      db.query(insertQuery, [name], (error, results) => {
+        if (error) {
+          console.error('Error adding category:', error);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+
+        if (results.affectedRows > 0) {
+          res.status(201).json({ message: 'Category added successfully' });
+        } else {
+          res.status(500).json({ error: 'Failed to add category' });
+        }
+      });
+    });
   } catch (error) {
     console.error('Error adding category:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// DELETE CATEGORY
+app.delete('/delete-category/:categoryID', async (req, res) => {
+  const { categoryID } = req.params; // Extracting `id` from URL parameters
+
+  if (!categoryID) {
+    return res.status(400).json({ error: 'Category ID is required' });
+  }
+
+  try {
+    // Check if the category exists
+    const checkQuery = 'SELECT COUNT(*) AS count FROM drink_categories WHERE categoryID = ?';
+    db.query(checkQuery, [categoryID], (error, results) => {
+      if (error) {
+        console.error('Error checking category existence:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+
+      const count = results[0].count;
+
+      if (count === 0) {
+        return res.status(404).json({ error: 'Category not found' });
+      }
+
+      // Delete the category
+      const deleteQuery = 'DELETE FROM drink_categories WHERE categoryID = ?';
+      db.query(deleteQuery, [categoryID], (error, results) => {
+        if (error) {
+          console.error('Error deleting category:', error);
+          return res.status(500).json({ error: 'Internal server error' });
+        }
+
+        if (results.affectedRows > 0) {
+          res.status(200).json({ message: 'Category deleted successfully' });
+        } else {
+          res.status(500).json({ error: 'Failed to delete category' });
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // GET ALL CATEGORIES IN CATEGORY TABLE FOR PRODUCTS DISPLAY IN POS PAGE
 app.get('/categories', (req, res) => {
@@ -593,6 +659,7 @@ app.get('/product', (req, res) => {
     res.json(products);
   });
 });
+
 
 
 // SELECT ALL PRODUCTS THAT IS ARCHIVE IN PRODUCT.JSX

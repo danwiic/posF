@@ -17,8 +17,6 @@ export default function Products() {
   const [showArchivedPopup, setShowArchivedPopup] = useState(false);
   const [showAddons, setShowAddons] = useState(false)
   const [addons, setAddons] = useState([])
-  const [showArchAddon, setShowArchAddon] = useState(false)
-  const [archAddon, setArchAddon] = useState([])
   const [showAddAddons, setShowAddAddons] = useState(false)
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -29,8 +27,10 @@ export default function Products() {
     image: null,
     category: ''
   });
+
   const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState('');
+  
 
 
   const fetchProducts = async () => {
@@ -111,8 +111,6 @@ export default function Products() {
     fetchProducts()
     fetchCategories()
     fetchArchivedProducts()
-    fetchAddon()
-    fetchArchAddon()
   }, [])
   
 
@@ -138,15 +136,6 @@ export default function Products() {
   const handleViewAddons = () => {
     setShowAddons(true);
   }
-  const handleViewArchAddons = () => {
-    setShowArchAddon(true)
-    setShowAddons(false)
-  }
-  const handleBackAddons = () => {
-    setShowAddons(true);
-    setShowArchAddon(false)
-    setShowAddAddons(false)
-  }
   const handleBackAddAddons = () => {
     setShowAddons(true);
     setShowAddAddons(false)
@@ -156,16 +145,33 @@ export default function Products() {
     setShowAddons(false)
   }
 
-  const addNewCategory = async (categoryName) => {
+  const handleDeleteCategory = async (categoryID) => {
     try {
-      await axios.post('http://localhost:8800/add-category', { name: categoryName });
+      await axios.delete(`http://localhost:8800/delete-category/${categoryID}`);
+      toast.success('Category has been deleted');
+      // Fetch categories again to update the UI
+      fetchCategories();
+    } catch (err) {
+      console.error('Error deleting category:', err);
+      toast.error('Failed to delete category');
+    }
+  };
+  
+
+  const addNewCategory = async (e) => {
+    e.preventDefault(); // Prevent form default behavior here
+
+    try {
+      await axios.post('http://localhost:8800/add-category', { name: newCategory });
       toast.success('Category added successfully');
-      fetchCategories(); 
+      fetchCategories(); // Ensure this function is defined elsewhere in your code
+      setNewCategory(''); // Clear the input after successful addition
+      setShowAddAddons(false); // Optionally close the popup
     } catch (error) {
       console.error('Error adding category:', error);
       toast.error('Error adding category');
     }
-  }
+  };
   
 
   const handleSubmitProduct = async () => {
@@ -272,85 +278,8 @@ export default function Products() {
     }
   }
 
-  const fetchAddon = async () => {
-    try{
-   const res = await axios.get('http://localhost:8800/addons')
-      setAddons(res.data)
-    }catch(err){
-      console.log(err)
-    }
-  } 
 
-  const fetchArchAddon = async () => {
-    try{
-   const res = await axios.get('http://localhost:8800/addons/arch')
-      setArchAddon(res.data)
-    }catch(err){
-      console.log(err)
-    }
-  } 
-
-  const archiveAddon = async (addonID) => {
-    try {
-      await axios.put(`http://localhost:8800/addons/${addonID}/archive`);
-      toast.success("Addon archived successfully")
-      fetchAddon()
-      fetchArchAddon()
-    } catch (err) {
-      console.error('Error archiving addon:', err)
-      toast.error("Failed to archive addon")
-    }
-  };
-
-  const unArchiveAddon = async (addonID) => {
-    try{
-      await axios.put(`http://localhost:8800/addons/${addonID}/unarchive`)
-      toast.success("Unarchived successfully")
-      fetchAddon()
-      fetchArchAddon()
-    }catch(err){
-      console.log(err)
-    }
-    fetchArchAddon()
-  }
-
-  const deleteAddon = async (addonID) => {
-    try{
-      await axios.delete(`http://localhost:8800/addons/${addonID}/delete`)
-      toast.success('Deleted successfully')
-      fetchAddon()
-      fetchArchAddon()
-    }catch(err){
-      console.error(err)
-    }
-  }
-
-  const [addonName, setAddonName] = useState('');
-  const [addonPrice, setAddonPrice] = useState('');
-
-  const handleAddAddon = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await axios.post('http://localhost:8800/addons/add', {
-        addonName,
-        addonPrice,
-      });
-
-      if (response.status === 201) {
-        toast.success('Addon added successfully!');
-        setAddonName('');
-        setAddonPrice('');
-        fetchAddon()
-      }
-    } catch (error) {
-      if (error.response && error.response.status === 400) {
-        toast.error('Addon with this name already exists.');
-      } else {
-        toast.error('An unexpected error occurred.');
-      }
-    }
-  };
+  
 
   return (
     <div className="stock--main--container">
@@ -359,7 +288,7 @@ export default function Products() {
         <div className="stock-container">
           <div className="popup--prod--button">
             <button onClick={handleAddProduct} className='btn--add'>Add New Product</button>
-            <button onClick={handleViewAddons} className="btn--archive">VIEW ADDONS</button>
+            <button onClick={handleViewAddons} className="btn--archive">VIEW CATEGORIES</button>
             <button onClick={handleShowArchived} className="btn--archive">VIEW ARCHIVED PRODUCTS</button>
           </div>
           <div className="table--wrapper--prod">
@@ -456,37 +385,32 @@ export default function Products() {
         {showAddons && (
           <Popup trigger={showAddons} setTrigger={setShowAddons} className="bg-dash">
           <h1 style={{ marginBottom: "15px", textAlign: "center", fontSize: "20px", fontWeight: "800" }}>
-            ADDONS
+            CATEGORIES
           </h1>
 
          <div className="addon--action--con">
             <button 
               onClick={handleViewAddAddons}>
-              Add Add-on
-            </button>
-
-            <button 
-              onClick={handleViewArchAddons}>
-              VIEW ARCHIVED ADDON
+              Add Category
             </button>
          </div>
 
             <table className='ordered--table'>
               <thead>
                 <tr>
-                  <th>Add-on Name</th>
-                  <th>Price</th>
+                  <th>CategoryID</th>
+                  <th>Category Name</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {addons.map(add => (
-                  <tr key={add.addonID} id={add.id}>
-                    <td>{add.addonName}</td>
-                    <td>{add.addonPrice}</td>
+                {categories.map(add => (
+                  <tr key={add.categoryID} id={add.id}>
+                    <td>{add.categoryID}</td>
+                    <td>{add.name}</td>
                     <td>
-                    <button onClick={() => archiveAddon(add.addonID)} className='btn--prod--archive'>ARCHIVE</button>
-                    </td>
+                     <button onClick={() => handleDeleteCategory(add.categoryID)} className='btn--prod--delete'>DELETE</button>
+                      </td>
                   </tr>
                 ))}
               </tbody>
@@ -494,50 +418,6 @@ export default function Products() {
        </Popup>
       )}
 
-        {showArchAddon && (
-          <Popup trigger={showArchAddon} setTrigger={setShowArchAddon} className="bg-dash">
-          {archAddon.length === 0 ? ( 
-            <div className='addons--arch--info'>
-            <p className='no--addons'>No archived add-ons</p>
-            <button onClick={handleBackAddons} className='btn--back'><IoIosArrowRoundBack />BACK</button>
-          </div>
-        ) :
-           <>
-           <h1 style={{ marginBottom: "15px", textAlign: "center", fontSize: "20px", fontWeight: "800" }}>
-           ARCHIVED ADDONS
-         </h1>
-       <div className="addon--action--con">
-       </div>
-           <table className='ordered--table'>
-             <thead>
-               <tr>
-                 <th>Add-on Name</th>
-                 <th>Action</th>
-               </tr>
-             </thead>
-             <tbody>
-               {archAddon.map(add => (
-                 <tr key={`${add.addonID} - ${add.addonID}`} id={add.id}>
-                   <td>{add.addonName}</td>
-                   <td>
-                     <button onClick={() => unArchiveAddon(add.addonID)}
-                      className='btn--prod--unarchive'
-                      >UNARCHIVE</button>
-                     <button onClick={() => deleteAddon(add.addonID)}
-                      className='btn--prod--delete'
-                      >DELETE</button>
-                   </td>
-                 </tr>
-               ))}
-             </tbody>
-           </table>
-          <div className="addons--arch--info">
-          <button onClick={handleBackAddons} className='btn--back'><IoIosArrowRoundBack />BACK</button>
-          </div>
-       </>
-        }
-      </Popup>
-        )}
 
         {showArchivedPopup && (
           <Popup trigger={showArchivedPopup} setTrigger={setShowArchivedPopup}>
@@ -587,39 +467,30 @@ export default function Products() {
         )}
 
         {showAddAddons && (
-           <Popup trigger={showAddAddons} setTrigger={setShowAddAddons}>
-           <h1 style={{ marginBottom: '15px', textAlign: 'center', fontSize: '20px', fontWeight: '800' }}>
-             NEW ADD-ONS
-           </h1>
-           <div className='add--addons'>
-             <form onSubmit={handleAddAddon} className='add--addon--form'>
-               <input
-                 className='new--addon--input'
-                 type='text'
-                 placeholder='Enter add-on name...'
-                 value={addonName}
-                 onChange={(e) => setAddonName(e.target.value)}
-                 required
-               />
-               <input
-                 className='new--addon--input'
-                 type='number'
-                 placeholder='Enter add-on price...'
-                 value={addonPrice}
-                 onChange={(e) => setAddonPrice(e.target.value)}
-                 maxLength="3"
-                 required
-               />
-               <button className='btn--add--addon' type='submit'>
-                 ADD
-               </button>
-             </form>
-             <button onClick={handleBackAddAddons} className='btn--cancel--add--addon'>
-               CANCEL
-             </button>
-           </div>
-         </Popup>
-        )}
+            <Popup trigger={showAddAddons} setTrigger={setShowAddAddons}>
+              <h1 style={{ marginBottom: '15px', textAlign: 'center', fontSize: '20px', fontWeight: '800' }}>
+                NEW CATEGORY
+              </h1>
+              <div className='add--addons'>
+                <form onSubmit={addNewCategory} className='add--addon--form'>
+                  <input
+                    className='new--addon--input'
+                    type='text'
+                    placeholder='Enter category name...'
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    required
+                  />
+                  <button className='btn--add--addon' type='submit'>
+                    ADD
+                  </button>
+                </form>
+                <button onClick={() => handleBackAddAddons()} className='btn--cancel--add--addon'>
+                  CANCEL
+                </button>
+              </div>
+            </Popup>
+              )}
         
         {showUpdate && (
           <Popup trigger={showUpdate} setTrigger={setShowUpdate}>

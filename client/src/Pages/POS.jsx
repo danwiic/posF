@@ -4,6 +4,7 @@ import "./styles/POS.css";
 import Receipt from "../components/Receipt/Receipt";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
+import Popup from '../components/Popup/Popup.jsx'
 
 
 export default function POS() {
@@ -35,15 +36,6 @@ export default function POS() {
     fetchAddons();
   }, []);
 
-  const handleAddonChange = (productID, addonID, quantity) => {
-    setSelectedAddons(prev => ({
-      ...prev,
-      [productID]: {
-        ...prev[productID],
-        [addonID]: quantity
-      }
-    }));
-  };
   
   // Fetch all categories
   const fetchCategories = async () => {
@@ -157,6 +149,7 @@ export default function POS() {
     return total - (total * discount);
   };
   
+  
   const receiptItems = quantities.flatMap((drink, drinkIndex) =>
     drink.sizes.map((quantity, sizeIndex) =>
       quantity > 0 ? {
@@ -171,13 +164,14 @@ export default function POS() {
         productID: products[drinkIndex].productID,
         sizeID: products[drinkIndex].sizes[sizeIndex].sizeID,
         addons: Object.entries(selectedAddons[products[drinkIndex].productID] || {})
-                .map(([addonID, addonQuantity]) => ({
-                  addonID,
-                  quantity: addonQuantity
-                }))
+                .map(([addonID, addonQuantity]) => {
+                  const addon = addons.find(addon => addon.addonID === parseInt(addonID));
+                  return addon ? `${addon.addonName} - x${addonQuantity} - ₱${addon.addonPrice * addonQuantity}` : null;
+                }).filter(addon => addon !== null)
       } : null
     ).filter(item => item !== null)
   );
+  
   
 
   const handleApplyDiscount = () => {
@@ -346,19 +340,12 @@ export default function POS() {
       toast.error("Payment amount is less than the total.");
     }
   };
-
-
-  
-  
-  
   
 
   return (
     <div className="pos--container">
       <ToastContainer/>
       <Layout>
-
-        
 
         <div className="category--btn">
           <button
@@ -381,83 +368,92 @@ export default function POS() {
 
             <div className="pos-list">
              {products.length === 0 ? (
-    <p>No products available</p>
-  ) : (
-    products.map((drink, drinkIndex) => (
-      <div key={drinkIndex} className="pos-item">
-        {drink.image && (
-          <img
-            src={drink.image}
-            className="pos--prod--image"
-            alt={drink.prodName}
-          />
-        )}
-        <h2>{drink.prodName}</h2>
-        <div className="pos-item-content">
-          {drink.sizes.map((size, sizeIndex) => (
-            <div key={sizeIndex} className="size-control-container">
-              <div className="size-info">
-                {size.sizeName} - ₱{size.price}
-              </div>
-              {size.quantity <= 0 ? (
-                <p className="out-of-stock">Out of Stock</p>
+                <p>No products available</p>
               ) : (
-                <div className="quantity-control">
-                  <button
-                    style={{ height: "22px" }}
-                    onClick={() => handleQuantityChange(
-                      drinkIndex,
-                      sizeIndex,
-                      quantities[drinkIndex].sizes[sizeIndex] - 1
+                products.map((drink, drinkIndex) => (
+                  <div key={drinkIndex} className="pos-item">
+                    {drink.image && (
+                      <img
+                        src={drink.image}
+                        className="pos--prod--image"
+                        alt={drink.prodName}
+                      />
                     )}
-                    disabled={quantities[drinkIndex].sizes[sizeIndex] <= 0}
-                  >
-                    -
-                  </button>
-                  <input
-                    type="text"
-                    value={quantities[drinkIndex].sizes[sizeIndex]}
-                    onChange={(e) => handleQuantityChange(
-                      drinkIndex,
-                      sizeIndex,
-                      e.target.value
-                    )}
-                    className="quantity-input"
-                    style={{ width: "35px", textAlign: "center", height: "22px" }}
-                    disabled={size.quantity <= 0}
-                  />
-                  <button
-                    style={{ height: "22px" }}
-                    onClick={() => handleQuantityChange(
-                      drinkIndex,
-                      sizeIndex,
-                      quantities[drinkIndex].sizes[sizeIndex] + 1
-                    )}
-                    disabled={size.quantity <= 0}
-                  >
-                    +
-                  </button>
-                </div>
+                    <h2>{drink.prodName}</h2>
+                    <div className="pos-item-content">
+                      {drink.sizes.map((size, sizeIndex) => (
+                        <div key={sizeIndex} className="size-control-container">
+                          <div className="size-info">
+                            {size.sizeName} - ₱{size.price}
+                          </div>
+                          {size.quantity <= 0 ? (
+                            <p className="out-of-stock">Out of Stock</p>
+                          ) : (
+                            <div className="quantity-control">
+                              <button
+                                style={{ height: "22px" }}
+                                onClick={() => handleQuantityChange(
+                                  drinkIndex,
+                                  sizeIndex,
+                                  quantities[drinkIndex].sizes[sizeIndex] - 1
+                                )}
+                                disabled={quantities[drinkIndex].sizes[sizeIndex] <= 0}
+                              >
+                                -
+                              </button>
+                              <input
+                                type="text"
+                                value={quantities[drinkIndex].sizes[sizeIndex]}
+                                onChange={(e) => handleQuantityChange(
+                                  drinkIndex,
+                                  sizeIndex,
+                                  e.target.value
+                                )}
+                                className="quantity-input"
+                                style={{ width: "35px", textAlign: "center", height: "22px" }}
+                                disabled={size.quantity <= 0}
+                              />
+                              <button
+                                style={{ height: "22px" }}
+                                onClick={() => handleQuantityChange(
+                                  drinkIndex,
+                                  sizeIndex,
+                                  quantities[drinkIndex].sizes[sizeIndex] + 1
+                                )}
+                                disabled={size.quantity <= 0}
+                              >
+                                +
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        
+                      ))}
+                    </div>
+                    {/* <button className="btn--choose--addon" onClick={() => setShowAddon(true)}>Add-ons</button> */}
+                  
+                  </div>
+                ))
               )}
-            </div>
-          ))}
-        </div>
-        
-       
-      </div>
-    ))
-  )}
 
-            
-            
           <div className="sticky-summary">
             <h2>Order Summary</h2>
             <button className="pay-discount" onClick={handleApplyDiscount}>10% Discount (PWD, Senior)</button>
             <ul>
-              {receiptItems.map((item, index) => (
-                <li key={index}>
-                  {item.name} - x{item.quantity} - ₱{item.price.toFixed(2)}
-                </li>
+            {receiptItems.map((item, index) => (
+                <div key={index} className="order-item">
+                  <span>{item.name} - x{item.quantity} - ₱{item.price.toFixed(2)}</span>
+                  {item.addons && item.addons.length > 0 && (
+                    <div className="addons-list">
+                      <span>Add-ons:</span>
+                      {item.addons.map((addon, addonIndex) => (
+                        <div key={addonIndex} className="addon-item">
+                          <span>{addon}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </ul>
             <h3>Total: ₱{getTotal().toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
@@ -481,11 +477,35 @@ export default function POS() {
 
         
       </Layout>
+
+        {/* {showAddon && (
+          <Popup trigger={showAddon} setTrigger={setShowAddon}>
+            <h3>Select Addons</h3>
+            {addons.map(add => (
+              <div className="addon-list" key={add.addonID}>
+                <p>{add.addonName} -  ₱{add.addonPrice}</p>
+
+                <div className="quantity-control">
+                  <button className="quantity-btn" onClick={() => handleDecrement(add.addonID)}>-</button>
+                  <input 
+                    type="number" 
+                    value={selectedQuantities[add.addonID] || 0}
+                    onChange={(e) => handleAddonChange(add.productID, add.addonID, parseInt(e.target.value, 10))}
+                    className="quantity-input"
+                  />
+                  <button className="quantity-btn" onClick={() => handleIncrement(add.addonID)}>+</button>
+                </div>
+              </div>
+            ))}
+            <button onClick={() => setShowAddon(false)}>Close</button>
+          </Popup>
+        )} */}
+
+
         {showReceipt && receiptData && (
         <div className="receipt-popup">
           <div className="receipt-popup-content">
             <button onClick={() => setShowReceipt(false)} className="close-btn">&#x2715;</button>
-            <button onClick={printReceipt} className="print-btn">Print</button>
             <Receipt
               transactionID={receiptData.transactionID}
               paymentMethod={receiptData.paymentMethod}
