@@ -301,19 +301,25 @@ app.post('/login', (req, res) => {
     if (err) return res.json({ Status: "Error", Error: "Error in query" });
     
     if (result.length > 0) {
-      bcrypt.compare(req.body.password.toString(), result[0].password, (err, match) => {
+      const user = result[0];
+      
+      if (user.status === 'archive') {
+        return res.json({ Status: "Error", Error: "Account is archived" });
+      }
+      
+      bcrypt.compare(req.body.password.toString(), user.password, (err, match) => {
         if (err) return res.json({ Error: "Password comparison error" });
         if (match) {
           const token = jwt.sign(
-            { id: result[0].id, role: result[0].role },
+            { id: user.id, role: user.role },
             JWT_SECRET 
           );
           return res.json({
             Status: "Success",
             user: {
-              id: result[0].id,
-              username: result[0].username,
-              role: result[0].role,
+              id: user.id,
+              username: user.username,
+              role: user.role,
             },
             token 
           });
@@ -326,6 +332,7 @@ app.post('/login', (req, res) => {
     }
   });
 });
+
 
 // LOGOUT -----------------> PRETTY OBVIUS IG 
 app.post("/logout", (req, res) => {
