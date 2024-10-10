@@ -1,6 +1,6 @@
-If you're planning to use this you need to install the dependencies or you may encounter an error if you try to run it.
+If you're planning to use this you need to install the dependencies or you'll encounter an error if you try to run it.
 
-heres a step by step on what you need to install in the client and server side.
+heres a step by step on what you need to install in the client and server side file.
 
 
 CLIENT SIDE
