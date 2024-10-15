@@ -27,7 +27,7 @@ SERVER SIDE
 
 Step 1: Navigate to the server file and type "npm init -y".
 
-Step 2: Install the other dependencies used in the server side by typing "npm i bcrypt cors express cookie-parser jsonwebtoken moment multer mysql nodemon".
+Step 2: Install the other dependencies used in the server side by typing "npm i bcrypt5.0.1 cors express cookie-parser jsonwebtoken moment multer mysql nodemon".
 
 
 NOTE: AGAIN, YOU CAN INSTALL THEM INDIVIDUALLY, BUT I PREFER TO INSTALL THEM ALL IN ONE GO. 
